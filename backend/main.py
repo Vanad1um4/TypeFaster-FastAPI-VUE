@@ -1,17 +1,21 @@
-from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, SESSION_SECRET_KEY, SESSION_EXPIRATION_TIME_HOURS
 from fastapi import FastAPI, Path, Query, HTTPException, Depends, status, Request, Response
 from schemas import OptionsSet, ChapterWithTextCreate, BookName, StatsReturn, TextChapter
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
+from secrets import SESSION_SECRET_KEY, SESSION_EXPIRATION_TIME_HOURS
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from starlette.middleware.sessions import SessionMiddleware
+from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
+from secrets import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
 from models import Base, engine, SessionLocal
 from fastapi.staticfiles import StaticFiles
+from secrets import APP_IP, APP_PORT
 from starlette.config import Config
 from sqlalchemy.orm import Session
 from pathlib import Path
 from typing import Any
 import uvicorn
 import logic
+import httpx
 import crud
 import json
 import os
@@ -26,18 +30,6 @@ app.add_middleware(
     session_cookie="session",
 )
 
-config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_SECRET': GOOGLE_CLIENT_SECRET}
-oauth_config = Config(environ=config_data)
-oauth = OAuth(oauth_config)
-oauth.register(
-    name='google',
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={
-        'scope': 'openid email profile',
-        'prompt': 'select_account',  # force to select account
-    }
-)
-
 
 def get_db():
     db = SessionLocal()
@@ -47,27 +39,73 @@ def get_db():
         db.close()
 
 
-### AUTH ROUTES ###############################################################
+### GOOGLE AUTH ROUTES ########################################################
+# TODO: To be returned upon domain purcahse...
 
-@app.route('/login')
-async def login(request: Request):
-    redirect_uri = request.url_for('auth')
-    return await oauth.google.authorize_redirect(request, redirect_uri)
+# config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_SECRET': GOOGLE_CLIENT_SECRET}
+# oauth_config = Config(environ=config_data)
+# oauth = OAuth(oauth_config)
+# oauth.register(
+#     name='google',
+#     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+#     client_kwargs={
+#         'scope': 'openid email profile',
+#         'prompt': 'select_account',  # force to select account
+#     }
+# )
 
 
-@app.route('/auth')
-async def auth(request: Request):
-    try:
-        access_token = await oauth.google.authorize_access_token(request)
-        # print(f'{access_token = }')
-    except OAuthError:
-        return RedirectResponse(url='/')
-    user_data = access_token['userinfo']
-    request.session['user'] = user_data
+# @app.route('/login')
+# async def login(request: Request):
+#     redirect_uri = request.url_for('auth')
+#     return await oauth.google.authorize_redirect(request, redirect_uri)
+
+
+# @app.route('/auth')
+# async def auth(request: Request):
+#     try:
+#         access_token = await oauth.google.authorize_access_token(request)
+#         # print(f'{access_token = }')
+#     except OAuthError:
+#         return RedirectResponse(url='/')
+#     user_data = access_token['userinfo']
+#     request.session['user'] = user_data
+#     return RedirectResponse(url='/')
+
+
+### GITHUB AUTH ROUTES ########################################################
+
+@app.get('/github_login')
+async def login():
+    return RedirectResponse(f'https://github.com/login/oauth/authorize?client_id={GITHUB_CLIENT_ID}')
+
+
+@app.get('/github_return')
+async def return_from_github(code: str, request: Request):
+    params = {
+        'client_id': GITHUB_CLIENT_ID,
+        'client_secret': GITHUB_CLIENT_SECRET,
+        'code': code
+    }
+    headers = {'Accept': 'application/json'}
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url='https://github.com/login/oauth/access_token', params=params, headers=headers)
+
+    response_json = response.json()
+    access_token = response_json['access_token']
+
+    async with httpx.AsyncClient() as client:
+        headers.update({'Authorization': f'Bearer {access_token}'})
+        response = await client.get('https://api.github.com/user', headers=headers)
+
+    response_json = response.json()
+    request.session['user'] = {'email': response_json['email']}
+
     return RedirectResponse(url='/')
 
 
-@app.route('/logout')
+@app.get('/logout')
 async def logout(request: Request):
     request.session.pop('user', None)
     return RedirectResponse(url='/')
@@ -177,12 +215,12 @@ async def delete_chapter_by_id(chapter_id: int, request: Request, db: Session = 
 
 ### TEXTS ROUTES ##############################################################
 
-@app.get('/api/texts/', tags=['Texts'])  # Debug route.
-async def get_all_texts(db: Session = Depends(get_db)):
-    db_texts = crud.get_all_texts(db)
-    if db_texts is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="There are no texts")
-    return db_texts
+# @app.get('/api/texts/', tags=['Texts'])  # Debug route.
+# async def get_all_texts(db: Session = Depends(get_db)):
+#     db_texts = crud.get_all_texts(db)
+#     if db_texts is None:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="There are no texts")
+#     return db_texts
 
 
 @app.get('/api/texts/{chapter_id}/{text_id}/', status_code=status.HTTP_200_OK, tags=['Texts'])
@@ -221,5 +259,5 @@ async def show_homepage():
     return FileResponse('static/index.html')
 
 
-# if __name__ == "__main__":
-#     uvicorn.run(app, host="127.0.0.1", port=8000)
+if __name__ == "__main__":
+    uvicorn.run(app, host=f"{APP_IP}", port=APP_PORT)

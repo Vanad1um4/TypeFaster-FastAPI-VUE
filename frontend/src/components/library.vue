@@ -581,11 +581,11 @@ onMounted(() => {
 <style>
 :root {
     --gtc1: 26px;
-    --gtc2: 59px;
+    --gtc2: 52px;
     --gtc3: 1fr;
     --gtc4: 80px;
     --gtc5: 85px;
-    --gtc6: 85px;
+    --gtc6: 86px;
     --gtc7: 33px;
     /* --gtc7: max-content; */
     /* --gtc7: max-content; */

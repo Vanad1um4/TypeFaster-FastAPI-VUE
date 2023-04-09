@@ -7,13 +7,16 @@ import json
 ### COOKIE FNS ################################################################
 
 def get_user_id(request: Request, db: Session):
-    user_cookies = request.session.get('user')
+    session_cookies = request.session.get('user')
+    # print(session_cookies)
 
-    if user_cookies:
-        user_email = user_cookies.get('email')
+    if session_cookies:
+        user_email = session_cookies.get('email').lower()
+        # print(user_email)
 
         if user_email:
             user_id = crud.get_user_id_by_email(user_email, db)
+            # print(user_id)
 
             if user_id:
                 return user_id
@@ -21,15 +24,15 @@ def get_user_id(request: Request, db: Session):
         return None
 
 
-def get_user_email(request: Request):
-    user_cookies = request.session.get('user')
+# def get_user_email(request: Request):
+#     session_cookies = request.session.get('user')
 
-    if user_cookies:
-        user_email = user_cookies.get('email')
-        return user_email
+#     if session_cookies:
+#         user_email = session_cookies.get('email')
+#         return user_email
 
-    else:
-        return None
+#     else:
+#         return None
 
 
 ### TEXTS CREATE FNS ##########################################################

@@ -209,7 +209,7 @@ def get_chapters_by_chapter_id(chapter_id: int, db: Session):
 def delete_chapter_by_id(chapter_id: int, user_id: int, db: Session):
     try:
         subquery = db.query(Chapter).join(Book).filter(Book.user_id == user_id, Chapter.id == chapter_id).subquery()
-        print(subquery)
+        # print(subquery)
         db.query(Chapter).filter(Chapter.id.in_(select([subquery.c.id]))).delete(synchronize_session=False)
 
         db.commit()

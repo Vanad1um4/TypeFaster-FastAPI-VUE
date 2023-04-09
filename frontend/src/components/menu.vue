@@ -29,7 +29,7 @@
                     v-on:click="login"
 
                 >
-                    <div class="auth-btn-txt">🔓 Login via google</div>
+                    <div class="auth-btn-txt">🔓 Login via github</div>
                 </div>
                 <div
                     v-if="globalState.user.authenticated === true"
@@ -283,7 +283,7 @@ onMounted(() => {
 })
 
 function login() {
-    window.location.href = '/login'
+    window.location.href = '/github_login'
 }
 function logout() {
     window.location.href = '/logout'
