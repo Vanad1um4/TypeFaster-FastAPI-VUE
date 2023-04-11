@@ -29,26 +29,6 @@
 <script setup>
 import { toRef, ref, reactive } from 'vue';
 
-// import { onMounted } from 'vue';
-// onMounted(() => {
-//     console.log("AAAAAAAAAAAAAAAAAAAAAAA")
-//     addNotification('BIG VERY BIG ad veeeery long text of a push notification why on Earth anyone would write something like that? CRAAAAAZY', 'error', 50000)
-//     addNotification('BIG VERY BIG ad veeeery long text of a push notification why on Earth anyone would write something like that? CRAAAAAZY', 'warning', 50000)
-//     addNotification('BIG VERY BIG ad veeeery long text of a push notification why on Earth anyone would write something like that? CRAAAAAZY', 'good', 50000)
-//     addNotification('BIG VERY BIG ad veeeery long text of a push notification why on Earth anyone would write something like that? CRAAAAAZY', 'info', 50000)
-// })
-
-// const props = defineProps({
-//     modalQuestionIsActive: {
-//         type: Boolean,
-//         default: true
-//     },
-//     text: {
-//         type: String,
-//         default: 'No text...'
-//     }
-// })
-
 const modalsState = reactive({
     modalQuestion: {
         visible: false,
@@ -130,7 +110,7 @@ defineExpose({ showModalQuestion, addNotification })
     font-weight: bold;
     /* background-color: white; */
     color: black;
-    margin: auto;
+    margin: 40vh auto 0;
     padding: 0;
     /* width: min-content; */
     width: 500px;
@@ -138,7 +118,7 @@ defineExpose({ showModalQuestion, addNotification })
     animation-name: animateappear;
     /* animation-duration: 0.2s; */
     /* white-space: nowrap; */
-    margin-top: 38%;
+    /* margin-top: 38%; */
     text-align: center;
 }
 /* @keyframes animateappear {

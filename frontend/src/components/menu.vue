@@ -394,8 +394,10 @@ body.light .options-content-hide {
 }
 body.night .options-content-hide {
     background-color: var(--grey8);
-    box-shadow: 0px 8px 16px 0px rgba(255,255,255,0.2);
-    border: 1px solid white;
+    /* box-shadow: 0px 8px 16px 0px rgba(255,255,255,0.2); */
+    box-shadow: 0 8px 16px rgb(255 255 255 / 10%);
+
+    border: 1px solid var(--grey6);
 }
 
 .options-drop-down .options-content-grid {

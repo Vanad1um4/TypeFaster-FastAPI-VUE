@@ -38,3 +38,4 @@ test.py
 nohup.out
 static_old
 secrets.py
+package-lock.json

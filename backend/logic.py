@@ -44,6 +44,18 @@ def texts_slice(text: str) -> list[str]:
         text = text.replace('  ', ' ')
     while '…' in text:
         text = text.replace('…', '...')
+    while "’" in text:
+        text = text.replace("’", "'")
+    while "‘" in text:
+        text = text.replace("‘", "'")
+    while "‘" in text:
+        text = text.replace("‘", "'")
+    while "“" in text:
+        text = text.replace("“", '"')
+    while "”" in text:
+        text = text.replace("”", '"')
+    while "–" in text:
+        text = text.replace("–", '-')
 
     texts_list = []
     MIN_CHARS_PER_TEXT = 0

@@ -529,49 +529,6 @@ function deleteChapterFetch(ch_id) {
 
 onMounted(() => {
     getBooksFetch()
-    // const time = '2023-04-07T13:55:26+03:00'
-    // // const date = parseISO(time);
-    // const date1 = new Date(time)
-
-    // const time2 = '1680773311166.352'
-    // const date2 = new Date(parseFloat(time2))
-    // date2.toLocaleDateString('ru', optionsDate)
-
-    // console.log(date)
-    // const options0 = {
-    //     year: 'numeric',
-    //     month: '2-digit',
-    //     day: '2-digit',
-    //     localeMatcher: 'best fit',
-    //     timeZone: 'UTC',
-    //     delimiter: '.'
-    // };
-
-    // const optionsDate = {
-    //     year: 'numeric',
-    //     month: '2-digit',
-    //     day: '2-digit',
-    // };
-    // const optionsTime = {
-    //     hour: '2-digit',
-    //     minute: '2-digit',
-    //     second: '2-digit',
-    //     hour12: false,
-    // };
-    // console.log(`${date1.toLocaleDateString('ru', optionsDate)} ${date1.toLocaleTimeString('ru', optionsTime)}`)
-    // console.log(`${date1.toLocaleDateString('en', optionsDate)} ${date1.toLocaleTimeString('en', optionsTime)}`)
-    // console.log(`${date2.toLocaleDateString('ru', optionsDate)} ${date2.toLocaleTimeString('ru', optionsTime)}`)
-    // console.log(`${date2.toLocaleDateString('en', optionsDate)} ${date2.toLocaleTimeString('en', optionsTime)}`)
-    // const options = {
-    //     year: 'numeric',
-    //     month: '2-digit',
-    //     day: '2-digit',
-    //     hour: '2-digit',
-    //     minute: '2-digit',
-    //     second: '2-digit',
-    //     hour12: false,
-    // };
-    // console.log(date1.toLocaleDateString('ru', options))
 })
 
 </script>

@@ -117,11 +117,11 @@ function pushNotification(txt, category) { // possible categories: 'error', 'war
 }
 
 function scrollActiveTextToCenter() {
-    const currTextDiv = document.querySelector(`.text${typeState.currTextId}`);
-    const mainScrollDiv = currTextDiv.parentElement;
-    const currTextRect = currTextDiv.getBoundingClientRect();
+    const currSpan = document.querySelector(`.text${typeState.currTextId} .current`);
+    const mainScrollDiv = currSpan.parentElement.parentElement;
+    const currSpanRect = currSpan.getBoundingClientRect();
     const mainScrollRect = mainScrollDiv.getBoundingClientRect();
-    const scrollValue = currTextRect.top - mainScrollRect.top - (mainScrollRect.height - currTextRect.height) / 2;
+    const scrollValue = currSpanRect.top - mainScrollRect.top - (mainScrollRect.height - currSpanRect.height) / 3;
     mainScrollDiv.scrollBy({ top: scrollValue, behavior: 'smooth' });
 }
 
@@ -534,6 +534,7 @@ body.hide-progress-bar .progress-bar { display: none }
 }
 .status-bar .status-pause, .status-end {
     padding: 0px 10px;
+    margin-bottom: 5px;
 }
 body.light .status-pause { color: var(--grey7) }
 body.light .status-pause { background-color: #f5e367 }
@@ -573,26 +574,8 @@ body.night .status-end { background-color: transparent }
 
 
 
-
 .active {
 }
-/* body.light .active .wrong { background-color: red }
-body.light .active .wrong { color: white }
-body.light .active .right { color: #9bb59b }
-body.light .active .corrected { color: #cbb5b5 }
-body.light .active .current { background-color: var(--black) }
-body.light .active .current { color: var(--white) }
-body.light .active .neutral { background-color: var(--grey1) }
-body.light .active .neutral { color: var(--grey7) }
-
-body.night .active .wrong { background-color: #a12d2d }
-body.night .active .wrong { color: white }
-body.night .active .right { color: #506a50 }
-body.night .active .corrected { color: #6e5656 }
-body.night .active .current { background-color: var(--white) }
-body.night .active .current { color: var(--black) }
-body.night .active .neutral { background-color: var(--grey8) }
-body.night .active .neutral { color: var(--grey4) } */
 
 body.light .wrong { background-color: red }
 body.light.hide-error-history .inactive .wrong { background-color: var(--grey1) }
