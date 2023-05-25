@@ -1,16 +1,23 @@
 from pydantic import BaseModel
 
 
-class OptionsSet(BaseModel):
+class Options(BaseModel):
     dark_mode: bool
     window_width: int
     show_stats_bar: bool
     show_progress_bar: bool
     show_error_history: bool
+    stats_slice_length_minutes: int
+    use_n_last_minutes_for_stats: int
 
 
-class BookName(BaseModel):
-    name: str
+class Book(BaseModel):
+    title: str
+    text: str
+
+
+class BookTitle(BaseModel):
+    title: str
 
 
 class ChapterWithTextCreate(BaseModel):
@@ -25,22 +32,8 @@ class TextChapter(BaseModel):
 
 class StatsReturn(BaseModel):
     class StatsReturnArgs(BaseModel):
-        # cpm: int
-        # wpm: int
-        # acc: float
-        # chars: int
-        # words: int
         errors: int
         time: int
 
-    # class StatsReturnSingleChar(BaseModel):
-    #     time: int
-    #     error: int
-    #     txt: str
-
     args: StatsReturnArgs
-    # stats: dict[str, StatsReturnSingleChar]
-    stats: list[list[str, int, int]]
-
-    # class Config:
-    #     orm_mode = True
+    stats_list: list[list[str, int, int]]

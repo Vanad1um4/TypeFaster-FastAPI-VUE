@@ -1,5 +1,5 @@
 <template>
-    <div v-show="globalState.user.authenticated" class="container">
+    <div v-show="globalState.user.authenticated" class="main-container">
         <div class="book-list">
             <div
                 v-for="book in books"
@@ -7,46 +7,88 @@
                 class="book-cont hoverable"
                 v-on:click="bookClicked"
             >
-                <div class="book-name">{{ book.name }}</div>
+                <div class="book-name">{{ book.title }}</div>
             </div>
             <div
                 class="book-cont book-cont-add hoverable"
                 v-on:click="addBookClicked"
             >
-                <div class="book-plus"> + create book... </div>
+                <div class="book-plus"> + Add new book... </div>
             </div>
         </div>
 
-        <div class="text-list">
+        <div class="book-content">
+
             <div v-show="divState.newBook.visible" class="new-book">
-                <div class="cont">
-                    <div class="header">
-                        Enter title of the book:
-                    </div>
-                    <input
-                        ref="createBookInput"
-                        class="name new-book-input"
-                        type="text"
-                        v-on:keydown.enter="createBook(createBookInput)"
-                    >
-                    <button
-                        class="btn add new-book-btn-add"
-                        v-on:click="createBook(createBookInput)"
-                    >
-                        Add
-                    </button>
-                    <button
-                        class="btn cancel new-book-btn-cancel"
-                        v-on:click="divState.newBook.visible = false"
-                    >
-                        Cancel
-                    </button>
+                
+                <div class="new-book-header">
+                    Add new book to your library
                 </div>
+
+                <div class="new-book-title-field-div">
+                    <input
+                        v-model=divState.newBook.createNewBookTitle
+                        class="new-book-title-input"
+                        type="text"
+                        v-on:keydown.enter="clickedCreateBook()"
+                        placeholder="Enter title of the book here"
+                    >
+                </div>
+                
+                <div
+                    v-for="tab in addBookTypeTabs"
+                    v-bind:class="tab.active ? 'active' : 'inactive'"
+                    class="new-book-add-text-tab"
+                    v-on:click="switchAddBookTab(tab)"
+                >
+                    {{ tab.txt }}
+                </div>
+                
+                <div
+                    v-show="addBookTypeTabs.paste.active"
+                    class="new-book-add-text-selected-tab-paste"
+                >
+                    <textarea
+                        v-model="divState.newBook.createNewBookText"
+                        class="new-book-text-input"
+                        placeholder="Paste text here"
+                        rows="10"
+                    ></textarea>
+                </div>
+
+                <div
+                    v-show="addBookTypeTabs.upload.active"
+                    class="new-book-add-text-selected-tab-upload"
+                >
+                    <!-- TODO: implement sometime later... -->
+                    Coming soon... 
+                </div>
+
+                <div 
+                    v-bind:class="['new-book-add-btn', divState.newBook.ready == false ? 'deactivated' : '']"
+                    v-on:click="clickedCreateBook()"
+                >
+                    Add
+                </div>
+
+                <div 
+                    v-bind:class="['new-book-cancel-btn', divState.newBook.ready == false ? 'deactivated' : '']"
+                    v-on:click="clickedCancelCreateBook()"
+                >
+                    Cancel
+                </div>
+                
             </div>
 
-            <div v-show="divState.selectedBook.visible" class="book">
-                <div class="cont">
-                    <div class="header">{{ divState.selectedBook.bookName }}</div>
+            <div v-show="divState.selectedBook.visible" class="selected-book">
+
+                <div class="selected-book-header">
+                    <div
+                        v-show="!divState.selectedBook.renameVisible"
+                        class="header"
+                    >
+                        {{ divState.selectedBook.bookName }}
+                    </div>
                     <input
                         v-show="divState.selectedBook.renameVisible"
                         ref="renameBookInput"
@@ -59,113 +101,99 @@
                         class="btn"
                         v-on:click="renameBook(renameBookInput)"
                     >
-                        💾
+                        Save
                     </button>
                     <button
                         class="btn"
                         v-on:click="divState.selectedBook.renameVisible = !divState.selectedBook.renameVisible"
                     >
-                        🏷️
+                        {{ divState.selectedBook.renameVisible ? 'Cancel' : 'Rename' }}
                     </button>
                     <button
                         class="btn"
                         v-on:click="askUserBeforeBookDelete"
                     >
-                        🚮
+                        Delete
                     </button>
                 </div>
+
+                <div class="selected-book-info-cont">
+                    <div
+                        v-show="divState.selectedBook.nextTextToType !== -1"
+                        class="selected-book-info-chars-n"
+                    >
+                        There're {{ divState.selectedBook.charsSum }} characters in this book.
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.nextTextToType === -1"
+                        class="selected-book-info-finished-message"
+                    >
+                        Congratulations! You have finished this book!
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.nextTextToType === -1"
+                        class="selected-book-info-finished-chars-n"
+                    >
+                        You have typed {{ divState.selectedBook.charsDoneSum }} chars.
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.nextTextToType !== -1 && divState.selectedBook.charsDoneSum !== 0"
+                        class="selected-book-info-typed-chars"
+                    >
+                        You have already typed {{ divState.selectedBook.charsDoneSum }} chars. ({{ Math.round((divState.selectedBook.charsDoneSum / divState.selectedBook.charsSum) * 10000) / 100 }}%) <br>
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.charsDoneSum !== 0"
+                        class="selected-book-info-typed-time"
+                    >
+                        It took you {{ divState.selectedBook.timePassed.h }} hours and {{ divState.selectedBook.timePassed.m }} minutes.
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.charsDoneSum === 0"
+                        class="selected-book-info-not-started"
+                    >
+                        You have not yet started this book.
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.nextTextToType !== -1 && divState.selectedBook.charsDoneSum !== 0"
+                        class="selected-book-info-to-type-chars-n"
+                    >
+                        Remains to be typed: {{ divState.selectedBook.charsSum - divState.selectedBook.charsDoneSum }} ({{ (10000.0 - Math.round((divState.selectedBook.charsDoneSum / divState.selectedBook.charsSum) * 10000)) / 100 }}%)
+                    </div>
+                    <div
+                        v-show="divState.selectedBook.timeRemainesApprox.h !== null && (divState.selectedBook.timeRemainesApprox.h !== 0 || divState.selectedBook.timeRemainesApprox.m !== 0)"
+                        class="selected-book-info-to-type-time"
+                    >
+                        It will take approximately {{ divState.selectedBook.timeRemainesApprox.h }} hours and {{ divState.selectedBook.timeRemainesApprox.m }} minutes for you to finish the book.
+                    </div>
+                </div>
+
+                <div
+                    v-show="divState?.selectedBook?.chart?.data?.labels?.length !== 0"
+                    class="selected-book-stats"
+                >
+                    <Line :data="chartData" :options="chartOptions" />
+                </div>
+
+                <div
+                    v-bind:class="['selected-book-start-btn', divState.selectedBook.nextTextToType === -1 ? 'deactivated' : '']"
+                    v-on:click="typeBookBtnClicked"
+                >
+                    <div class="selected-book-start-btn-txt">
+                        {{ divState.selectedBook.nextTextToType === -1 ? 'Book finished' : divState.selectedBook.charsDoneSum === 0 ? 'Click here to begin typing' : 'Click here to continue typing' }}
+                    </div>
+                </div>
+
             </div>
 
             <div v-show="divState.loadingGif.visible" class="loading">
                 <img v-bind:src="loadingImageUrl" class="loading-gif">
             </div>
 
-            <div v-show="divState.chaptersList.visible" class="texts texts-cont">
-                <div
-                    v-for="chapter in chapters"
-                    class="chapter-cont"
-                    v-on:click="chapterClicked(chapter)"
-                >
-                    <div
-                        class="chapter-head-cont"
-                    >
-                        <!-- v-on:click.stop="chapter.chapter.show = !chapter.chapter.show" -->
-                        <!-- v-on:mouseenter="chapter.delBtnShow = true"
-                        v-on:mouseleave="chapter.delBtnShow = false" -->
-                        <div
-                            class="cell chapter-done-pic">
-                            {{ chapter.done == 1 ? '✅' : chapter.done == 0 ? '❌' : `🟡` }}
-                        </div>
-                        <div
-                            class="cell chapter-done-num">
-                            {{ chapter.done == 1 ? '100%' : chapter.done == 0 ? '0%' : `${Math.round(chapter.done * 100)}%` }}
-                        </div>
-                        <div class="cell chapter-name">{{ chapter.ch_name }}</div>
-                        <div class="cell chapter-cpm">{{ chapter.cpm == 0 ? '- CPM' : chapter.cpm + ' CPM' }}</div>
-                        <div class="cell chapter-wpm">{{ chapter.wpm == 0 ? '- WPM' : chapter.wpm + ' WPM' }}</div>
-                        <div class="cell chapter-acc">{{ chapter.acc == 0 ? '- % acc.' : chapter.acc + '% acc.' }}</div>
-                        <button
-                            class="chapter-del"
-                            v-on:click.stop="askUserBeforeChapterDelete(chapter)"
-                        >
-                            🚮
-                        </button>
-                    </div>
-
-                </div>
-            </div>
-
-            <div v-show="divState.chaptersList.visible" class="chapter-add-cont">
-                <div class="chapter-add-btn" v-on:click.stop="clickedAddTextOne">+ add one chapter</div>
-                <div class="chapter-add-btn" v-on:click.stop="clickedAddTextMany">+ add two or more chapters</div>
-                <div
-                    v-show="divState.addText.visibleMain"
-                    class="chapter-add-hide"
-                >
-
-                    <div
-                        v-show="divState.addText.visibleOne"
-                        class="chapter-add-one-cont"
-                    >
-                        <div class="chapter-add-one-header">Add one chapter</div>
-                        <div class="chapter-add-one-chapter-tag">Chapter name:</div>
-                        <input
-                            ref="createTextChapter"
-                            class="chapter-add-one-chapter-input"
-                            type="text"
-                            placeholder="Paste chapter name here"
-                        >
-                        <div class="chapter-add-one-text-tag">Text:</div>
-                        <textarea
-                            ref="createTextStr"
-                            class="chapter-add-one-text-input"
-                            placeholder="Paste text here"
-                            rows="10"
-                        ></textarea>
-                        <button
-                            class="chapter-add-one-save-btn"
-                            v-on:click.stop="clickedSaveTextOne"
-                        >
-                            Save
-                        </button>
-                    </div>
-                    <div
-                        v-show="divState.addText.visibleMany"
-                        class="chapter-add-many"
-                    >
-                        <div class="chapter-add-many-header">Add text to be automatically split into specified number of chapters<br>Yet to be implemented...</div>
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
-    <!-- <button v-on:click="testFunc">CLICK</button> -->
-
     <Modals ref="modalsRef" v-on:answer="gotAnswerFromUser" />
-
-    <!-- <button v-on:click="pushNotification('Some big and very clever message to our best user')">CLICK</button> -->
 
 </template>
 
@@ -174,25 +202,46 @@
 
 
 <script setup>
-
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import loadingImageUrl from '@/pics/loading.gif'
 import Modals from './modals.vue'
 import router from '../router.js'
 import { globalState } from '../state.js'
+import { chartOptions as importedChartOptions, chartColors as importedChartColors } from '../const.js'
+
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
+import { Line } from 'vue-chartjs'
+
 
 const modalsRef = ref()
 const books = reactive([])
-const chapters = reactive([])
+const addBookTypeTabs = reactive({
+    paste: {txt: 'Вставить текст', active: true},
+    upload: {txt: 'Вставить файл', active: false},
+})
 const renameBookInput = ref()
-const createBookInput = ref()
-const createTextChapter = ref()
-const createTextStr = ref()
 
 const divState = reactive({
-    newBook: {visible: false},
-    selectedBook: {visible: false, id: 0, bookName: '', renameVisible: false},
-    chaptersList: {visible: false},
+    newBook: {visible: false, ready: true, createNewBookTitle: '', createNewBookText: ''},
+    selectedBook: {
+        id: 0,
+        visible: false,
+        bookName: '',
+        renameVisible: false,
+        nextTextToType: 0,
+        chart: {
+            data: {labels: [], cpm: [], wpm: [], acc: []},
+            colors: {
+                cpm: globalState.options.darkMode.val === false ? importedChartColors.light.cpm : importedChartColors.night.cpm, 
+                wpm: globalState.options.darkMode.val === false ? importedChartColors.light.wpm : importedChartColors.night.wpm, 
+                acc: globalState.options.darkMode.val === false ? importedChartColors.light.acc : importedChartColors.night.acc, 
+            },
+        },
+        timePassed: {h: 0, m: 0},
+        timeRemainesApprox: {h: null, m: null},
+        charsSum: 0,
+        charsDoneSum: 0,
+    },
     loadingGif: {visible: false},
     addText: {visibleMain: false, visibleOne: true, visibleMany: false},
 })
@@ -202,67 +251,139 @@ const actionState = reactive({
     params: '',
 })
 
-// const someTestVal = ref(true)
-// function testFunc() {
-//     someTestVal.value = !someTestVal.value
-// }
+const chartData = computed(() => ({
+    labels: divState.selectedBook.chart.data.labels,
+    datasets: [
+        {
+            label: 'CPM',
+            borderColor: divState.selectedBook.chart.colors.cpm,
+            backgroundColor: divState.selectedBook.chart.colors.cpm,
+            data: divState.selectedBook.chart.data.cpm,
+            yAxisID: 'y',
+        },
+        {
+            label: 'WPM',
+            borderColor: divState.selectedBook.chart.colors.wpm,
+            backgroundColor: divState.selectedBook.chart.colors.wpm,
+            data: divState.selectedBook.chart.data.wpm,
+            yAxisID: 'y1',
+        },
+        {
+            label: 'ACC',
+            borderColor: divState.selectedBook.chart.colors.acc,
+            backgroundColor: divState.selectedBook.chart.colors.acc,
+            data: divState.selectedBook.chart.data.acc,
+            yAxisID: 'y2',
+        },
+    ]
+}))
+
+const chartOptions = importedChartOptions
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend
+)
+
 
 function bookClicked(event) {
     divState.newBook.visible = false
     divState.selectedBook.renameVisible = false
     divState.addText.visibleMain = false
-    divState.chaptersList.visible = false
 
     const bookId = event.target.id
     const bookName = event.target.childNodes[0].textContent
-    // console.log(bookId, bookName)
     divState.selectedBook.id = bookId
     divState.selectedBook.bookName = bookName
-    getChaptersFetch(bookId)
+    getTheBooksStatsFetch(bookId)
 }
 
 
 function addBookClicked() {
     divState.newBook.visible = true
     divState.selectedBook.visible = false
-    divState.chaptersList.visible = false
 }
 
-function chapterClicked(chapter) {
-    if (chapter.done == 1) {
-        pushNotification(`
-            You've already completed this chapter. It is not designed to be retyped.
-            If you really want to type it again, you can delete it and add once more.
-        `, 'warning', 10)
-    } else {
-        // console.log(chapter.ch_id)
-        router.push({ name: 'type', params: { chapter_id: chapter.ch_id } })
+
+function switchAddBookTab(tab) {
+    if (!tab.active) {
+        if (addBookTypeTabs.paste.active === true) {
+            addBookTypeTabs.paste.active = false
+            addBookTypeTabs.upload.active = true
+        } else {
+            addBookTypeTabs.paste.active = true
+            addBookTypeTabs.upload.active = false
+        }
     }
 }
 
 
-function validateNameString(name) {
-    let trimmedName = name.trim()
-    if (trimmedName.length < 256 && trimmedName.length > 0) {
-        return trimmedName
+function typeBookBtnClicked() {
+    if (divState.selectedBook.nextTextToType === -1) {
+        pushNotification(`
+            You've already completed this book. It is not designed to be retyped.
+            If you really want to type it again, you can add it again with new title.`, 'warning', 10)
+
     } else {
+        router.push({ name: 'type', params: { book_id: divState.selectedBook.id } })
+    }
+}
+
+
+function validateBookTitle(title) {
+    let trimmedTitle = title.trim()
+    if (trimmedTitle.length > 0 && trimmedTitle.length < 256) {
+        return trimmedTitle
+    } else {
+        pushNotification('Book title must be from 1 to 255 characters long', 'error')
         return false
     }
 }
 
 
-function createBook(newBookName) {
-    const newName = validateNameString(newBookName.value)
-    if (newName === false) {
-        pushNotification('The name of the book must be from 1 to 255 characters long...', 'warning')
+function validateBookText(text) {
+    // TODO: maybe think of some a little bit more interesting checks sometime?
+    let trimmedText = text.trim()
+    if (trimmedText.length > 0) {
+        return trimmedText
     } else {
-        createBookFetch(newName)
+        pushNotification("There should be some text, don't you think? :)", 'error')
+        return false
     }
 }
 
 
+function clickedCreateBook() {
+    if (!divState.newBook.ready) {
+        pushNotification('Please give server a chance to respond :)', 'info')
+        return
+    }
+    const title = validateBookTitle(divState.newBook.createNewBookTitle)
+    const text = validateBookText(divState.newBook.createNewBookText)
+    if (!title || !text) {
+        pushNotification('Aborting...', 'info')
+        return
+    }
+    createBookFetch(title, text)
+}
+
+
+function clickedCancelCreateBook() {
+    if (!divState.newBook.ready) {
+        pushNotification('Please give server a chance to respond :)', 'info')
+        return
+    }
+    divState.newBook.visible = false
+}
+
+
 function renameBook(newBookName) {
-    const newName = validateNameString(newBookName.value)
+    const newName = validateBookTitle(newBookName.value)
     if (newName === false) {
         pushNotification('The name of the book must be from 1 to 255 characters long...', 'warning')
     } else {
@@ -275,8 +396,6 @@ function renameBook(newBookName) {
 function askUserBeforeBookDelete() {
     actionState['actionType'] = 'bookDelById'
     actionState['params'] = divState.selectedBook.id
-    // console.log(actionState)
-    // console.log(typeof(actionState))
 
     const question = 'Are you sure you want to delete this book? This operation is irreversible.'
     const yesAnswer = 'Yes, delete'
@@ -284,20 +403,8 @@ function askUserBeforeBookDelete() {
     modalsRef.value.showModalQuestion(question, yesAnswer, noAnswer)
 }
 
-function askUserBeforeChapterDelete(obj) {
-    // console.log(obj)
-    actionState['actionType'] = 'chapterDelById'
-    actionState['params'] = obj.ch_id
-    // console.log(actionState)
-
-    const question = 'Are you sure you want to delete this chapter? This operation is irreversible.'
-    const yesAnswer = 'Yes, delete'
-    const noAnswer = 'No, go back'
-    modalsRef.value.showModalQuestion(question, yesAnswer, noAnswer)
-}
 
 function gotAnswerFromUser(answ) {
-    // console.log(answ)
     if (answ === 'yes') {
         if (actionState.actionType === 'bookDelById') {
             deleteBookFetch(actionState.params)
@@ -316,66 +423,26 @@ function pushNotification(txt, category, seconds) { // possible categories: 'err
 }
 
 
-function clickedAddTextOne() {
-    if (divState.addText.visibleMain === true) {
-        if (divState.addText.visibleOne === true) {
-            divState.addText.visibleMain = false
-        } else {
-            divState.addText.visibleMany = false
-            divState.addText.visibleOne = true
-        }
-    } else {
-        // console.log(divState.addText)
-        divState.addText.visibleMain = true
-        divState.addText.visibleMany = false
-        divState.addText.visibleOne = true
-    }
+function parseResponseWithStats(res) {
+    divState.selectedBook.nextTextToType = res?.first_untyped_text_id ?? -1
+    divState.selectedBook.chart.data = res?.chart_stats ?? {labels: [], cpm: [], wpm: [], acc: []}
+    divState.selectedBook.timePassed = res?.time_passed ?? {h: 0, m: 0}
+    divState.selectedBook.timeRemainesApprox = res?.time_remaines_approx ?? {h: null, m: null}
+    divState.selectedBook.charsSum = res?.chars_sum ?? 0
+    divState.selectedBook.charsDoneSum = res?.chars_done_sum ?? 0
 }
 
-
-function clickedAddTextMany() {
-    if (divState.addText.visibleMain === true) {
-        if (divState.addText.visibleMany === true) {
-            divState.addText.visibleMain = false
-        } else {
-            divState.addText.visibleOne = false
-            divState.addText.visibleMany = true
-        }
-    } else {
-        // console.log(divState.addText)
-        divState.addText.visibleMain = true
-        divState.addText.visibleOne = false
-        divState.addText.visibleMany = true
-    }
-}
-
-function clickedSaveTextOne() {
-    const bookId = divState.selectedBook.id
-    const chapterName = createTextChapter.value.value
-    const textStr = createTextStr.value.value
-    // console.log(bookId, chapterName, textStr)
-
-    const validatedChapterName = validateNameString(chapterName)
-    if (validatedChapterName === false) {
-        pushNotification('The name of the chapter must be from 1 to 255 characters long...', 'warning')
-    } else {
-        if (textStr.length < 1) {
-            pushNotification('Looks like you forgot to add text...', 'warning')
-        } else {
-            // console.log(bookId, chapterName, textStr)
-            createChapterFetch(bookId, chapterName, textStr)
-        }
-    }
-}
 
 ////////////////////////////////////////////////////////////// BOOK FETCHES ///
 
-function createBookFetch(newBookName) {
+function createBookFetch(bookTitle, bookText) {
+    divState.newBook.ready = false
     const requestData = {
         method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            'name': newBookName
+            title: bookTitle,
+            text: bookText
         })
     }
     fetch('/api/books/', requestData)
@@ -384,9 +451,32 @@ function createBookFetch(newBookName) {
                 getBooksFetch()
                 pushNotification('Book created successfully', 'good')
             } else if (response.status === 409) {
-                pushNotification('This book already exist', 'warning')
+                pushNotification('Book with this name already exists, try another one', 'warning')
             } else {
                 pushNotification('Something went wrong', 'error')
+            }
+            divState.newBook.ready = true
+        })
+}
+
+
+function getTheBooksStatsFetch(bookId) {
+    divState.loadingGif.visible = true
+    const requestData = {
+        method: 'GET',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
+    }
+    fetch(`/api/books/${bookId}/`, requestData)
+        .then( response => {
+            if (response.status === 200) {
+                response.json().then( result => {
+                    // console.log(result)
+                    parseResponseWithStats(result)
+                    divState.loadingGif.visible = false
+                    divState.selectedBook.visible = true
+                })
+            } else {
+                divState.loadingGif.visible = false
             }
         })
 }
@@ -395,12 +485,11 @@ function createBookFetch(newBookName) {
 function getBooksFetch() {
     divState.newBook.visible = false
     divState.addText.visibleMain = false
-    divState.chaptersList.visible = false
     divState.selectedBook.visible = false
     books.length = 0
     const requestData = {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
     }
     fetch('/api/books/', requestData)
         .then( response => {
@@ -419,9 +508,9 @@ function getBooksFetch() {
 function renameBookFetch(newBookName) {
     const requestData = {
         method: 'PUT',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            'name': newBookName
+            title: newBookName
         })
     }
     fetch(`/api/books/${divState.selectedBook.id}/`, requestData)
@@ -440,7 +529,7 @@ function renameBookFetch(newBookName) {
 function deleteBookFetch(bookId) {
     const requestData = {
         method: 'DELETE',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     }
     fetch(`/api/books/${bookId}/`, requestData)
         .then( response => {
@@ -453,146 +542,48 @@ function deleteBookFetch(bookId) {
         })
 }
 
-////////////////////////////////////////////////////////////// TEXT FETCHES ///
-
-function createChapterFetch(bookId, chapterName, textStr) {
-    const requestData = {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            'book_id': bookId,
-            'chapter_name': chapterName,
-            'text': textStr,
-        })
-    }
-    fetch('/api/chapters/', requestData)
-        .then( response => {
-            console.log(response.status)
-            if (response.status === 204) {
-                getBooksFetch()
-                pushNotification('Text added successfully', 'good')
-            } else {
-                pushNotification('Something went wrong', 'error')
-            }
-        })
-}
-
-
-function getChaptersFetch(bookId) {
-    divState.loadingGif.visible = true
-    const requestData = {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
-    }
-    fetch(`/api/chapters/${bookId}/`, requestData)
-        .then( response => {
-            if (response.status === 200) {
-                response.json().then( result => {
-                    // console.log(result)
-                    chapters.length = 0
-                    for (const chapter of result.chapters) {
-                        chapters.push(chapter)
-                        // console.log(chapter)
-                    }
-                    // console.log(chapters)
-                    divState.loadingGif.visible = false
-                    divState.chaptersList.visible = true
-                    divState.selectedBook.visible = true
-                })
-            } else {
-                divState.loadingGif.visible = false
-            }
-        })
-}
-
-
-// function deleteTextsByChapterNameFetch(chapterName) {
-function deleteChapterFetch(ch_id) {
-    const requestData = {
-        method: 'DELETE',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        // body: JSON.stringify({
-        //     'chapter': chapterName,
-        // })
-    }
-    fetch(`/api/chapters/${ch_id}/`, requestData)
-        .then( response => {
-            if (response.status === 204) {
-                getBooksFetch()
-                pushNotification('Chapter deleted successfully', 'good')
-            } else {
-                pushNotification('Something went wrong', 'error')
-            }
-        })
-}
-
 
 onMounted(() => {
     getBooksFetch()
 })
 
+watch(() => globalState.options.darkMode.val, (darkMode) => {
+    if (darkMode === false) {
+        divState.selectedBook.chart.colors.cpm = importedChartColors.light.cpm
+        divState.selectedBook.chart.colors.wpm = importedChartColors.light.wpm
+        divState.selectedBook.chart.colors.acc = importedChartColors.light.acc
+    } else if (darkMode === true) {
+        divState.selectedBook.chart.colors.cpm = importedChartColors.night.cpm
+        divState.selectedBook.chart.colors.wpm = importedChartColors.night.wpm
+        divState.selectedBook.chart.colors.acc = importedChartColors.night.acc
+    }
+})
 </script>
 
 
 
-<style>
-:root {
-    --gtc1: 26px;
-    --gtc2: 52px;
-    --gtc3: 1fr;
-    --gtc4: 80px;
-    --gtc5: 85px;
-    --gtc6: 86px;
-    --gtc7: 33px;
-    /* --gtc7: max-content; */
-    /* --gtc7: max-content; */
-}
-</style>
 
 <style scoped>
-
-/* .hidden {
-    display: none;
-} */
 
 h2 {
     margin: 7px;
     text-align: center;
 }
 
-/* .container-info {
-    display: grid;
-    grid-template-columns: 35% 65%;
-    user-select: none;
-    font-size: 18px;
-}
-.container-info .book-list-info { padding-left: 13px }
-.container-info .text-list-info { padding-left: 25px }
-
-body.light .container-info .book-list-info { color: var(--grey7) }
-body.light .container-info .text-list-info { color: var(--grey7) }
-body.night .container-info .book-list-info { color: var(--grey4) }
-body.night .container-info .text-list-info { color: var(--grey4) } */
-
-
-
-.container {
-    /* display: grid; */
-    /* grid-template-columns: 35% 65%; */
+.main-container {
     display: flex;
     height: 100%;
 }
-.container > .book-list {
+.main-container > .book-list {
     width: 34%;
 
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--gap-5px);
 }
 
-.container > .book-list > .book-cont {
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
+.main-container > .book-list > .book-cont {
+    border-radius: var(--main-border-radius-3px);
     padding: 5px 5px;
     height: 40px;
     position: relative;
@@ -602,16 +593,13 @@ body.night .container-info .text-list-info { color: var(--grey4) } */
     display: flex;
     align-items: center;
 }
-body.light .container > .book-list > .book-cont { background-color: var(--grey2) }
-body.night .container > .book-list > .book-cont { background-color: var(--grey7) }
+body.light .main-container > .book-list > .book-cont { background-color: var(--grey2) }
+body.night .main-container > .book-list > .book-cont { background-color: var(--grey7) }
 
-body.light .container > .book-list > .book-cont { color: var(--grey7); }
-body.night .container > .book-list > .book-cont { color: var(--grey2); }
+body.light .main-container > .book-list > .book-cont { color: var(--grey7); }
+body.night .main-container > .book-list > .book-cont { color: var(--grey2); }
 
-/* .container > .book-list > .book-cont-add {
-} */
-
-.container > .book-list > .book-cont > .book-name, .book-plus {
+.main-container > .book-list > .book-cont > .book-name, .book-plus {
     font-weight: 700;
     font-size: 20px;
     pointer-events: none;
@@ -622,167 +610,214 @@ body.night .container > .book-list > .book-cont { color: var(--grey2); }
     -webkit-box-orient: vertical;
 }
 
-.container > .book-list > .book-cont > .book-plus {
+.main-container > .book-list > .book-cont > .book-plus {
     text-align: center;
     width: 100%;
     font-size: 20px;
 }
 
-/* .container > .book-list > .book-cont-add:hover {
-} */
-.container > .book-list > .hoverable:hover {
+.main-container > .book-list > .hoverable:hover {
     cursor: pointer;
     left: 5px;
 }
-body.light .container > .book-list > .hoverable:hover {
+body.light .main-container > .book-list > .hoverable:hover {
     color: var(--grey8);
     background-color: var(--grey3);
 }
-body.night .container > .book-list > .hoverable:hover {
+body.night .main-container > .book-list > .hoverable:hover {
     color: var(--white);
     background-color: var(--grey6);
 }
 
-
-
-
-.container > .text-list {
+.main-container > .book-content {
     width: 66%;
 
     margin-left: 10px;
 
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: var(--gap-5px);
+}
 
-    /* flex: 1 0 auto; */
-    /* height: 1%; */
-}
-.container > .text-list > .new-book > .cont {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-    align-items: center;
-}
-.container > .text-list > .new-book > .cont > * {
+
+
+
+
+
+
+.new-book {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    flex-direction: column;
+    gap: var(--gap-5px);
+
     font-weight: 700;
     font-size: 20px;
 }
-.container > .text-list > .new-book > .cont > .header {
-    /* flex-grow: 2; */
-    /* flex: 1 1 auto */
-}
-.container > .text-list > .new-book > .cont > .name {
-    /* flex-grow: 1; */
-    /* flex: 1 1 auto */
-    width: 50%
-}
-
-
-
-
-
-
-.container > .text-list > .book > .cont {
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
+.new-book > * {
+    border-radius: var(--main-border-radius-3px);
     padding: 5px 5px;
 }
-body.light .text-list .book .cont { background-color: var(--grey2) }
+body.light .new-book > * { background-color: var(--grey2) }
+body.night .new-book > * { background-color: var(--grey7) }
 
-body.night .text-list .book .cont { background-color: var(--grey7) }
+.new-book-header,
+.new-book-title-field-div,
+.new-book-add-text-selected-tab-paste,
+.new-book-add-text-selected-tab-upload {
+    grid-column: span 2;
+}
 
-.container > .text-list > .book > .cont {
+body.light .new-book-add-text-tab.inactive { color: var(--grey4) }
+body.night .new-book-add-text-tab.inactive { color: var(--grey5) }
+
+.new-book-add-text-tab, 
+.new-book-add-btn,
+.new-book-cancel-btn {
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+.new-book-add-btn.deactivated,
+.new-book-cancel-btn.deactivated {
+    cursor: not-allowed;
+}
+body.light .new-book-add-btn { background-color: #68c968 }
+body.night .new-book-add-btn { background-color: #076c07 }
+
+body.light .new-book-add-btn.deactivated { color: var(--grey3) }
+body.light .new-book-add-btn.deactivated { background-color: var(--grey2) }
+body.night .new-book-add-btn.deactivated { color: var(--grey6) }
+body.night .new-book-add-btn.deactivated { background-color: var(--grey7) }
+
+body.light .new-book-cancel-btn { background-color: #e77b7b }
+body.night .new-book-cancel-btn { background-color: #891616 }
+
+body.light .new-book-cancel-btn.deactivated { color: var(--grey3) }
+body.light .new-book-cancel-btn.deactivated { background-color: var(--grey2) }
+body.night .new-book-cancel-btn.deactivated { color: var(--grey6) }
+body.night .new-book-cancel-btn.deactivated { background-color: var(--grey7) }
+
+.new-book-title-input,
+.new-book-text-input {
+    width: -webkit-fill-available;
+}
+.new-book-title-input {
+    font-size: 17px;
+}
+.new-book-text-input {
+    word-wrap: normal;
+}
+
+
+
+
+
+
+.selected-book {
     display: flex;
-    gap: 5px;
+    flex-direction: column;
+    gap: var(--gap-5px);
+}
+
+
+.selected-book-header {
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+}
+body.light .selected-book-header { background-color: var(--grey2) }
+body.night .selected-book-header { background-color: var(--grey7) }
+
+.selected-book-header {
+    display: flex;
+    gap: var(--gap-5px);
     align-items: center;
 }
-.container > .text-list > .book > .cont > * {
+.selected-book-header > * {
     font-weight: 700;
     font-size: 20px;
 }
-.container > .text-list > .book > .cont > .header {
+.selected-book-header > .header {
     flex-grow: 1;
     overflow: hidden;
 }
-.container > .text-list > .book > .cont > .name {
+.selected-book-header > .name {
     flex-grow: 1;
 }
-.container > .text-list > .book > .cont > .btn {
+.selected-book-header > .btn {
     white-space: nowrap;
+    font-weight: normal;
+    font-size: 16px;
 }
 
 
 
 
 
-.container > .text-list > .loading {
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
+.selected-book-info-cont {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+    font-size: 18px;
+}
+
+body.light .selected-book-info-cont { background-color: var(--grey2) }
+body.night .selected-book-info-cont { background-color: var(--grey7) }
+
+
+
+
+
+
+
+.selected-book-stats {
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+    /* background-color: red; */
+    height: 250px;
+}
+body.light .selected-book-stats { background-color: var(--grey2) }
+body.night .selected-book-stats { background-color: var(--grey7) }
+
+
+
+
+.selected-book-start-btn {
+    border-radius: var(--main-border-radius-3px);
+    padding: 8px 5px;
+    font-weight: 700;
+    font-size: 20px;
+    text-align: center;
+    cursor: pointer;
+}
+.selected-book-start-btn.deactivated {
+    cursor: not-allowed;
+}
+body.light .selected-book-start-btn { background-color: var(--grey2) }
+body.night .selected-book-start-btn { background-color: var(--grey7) }
+
+body.light .selected-book-start-btn.deactivated { color: var(--grey3) }
+body.night .selected-book-start-btn.deactivated { color: var(--grey6) }
+
+
+
+
+
+
+.main-container > .book-content > .loading {
+    border-radius: var(--main-border-radius-3px);
     padding: 5px 5px;
     text-align: center;
 }
-.container > .text-list > .loading > .loading-gif {
+.main-container > .book-content > .loading > .loading-gif {
     width: 25px;
     height: 25px;
 }
-body.light .text-list .loading { background-color: var(--grey2) }
-body.night .text-list .loading { background-color: var(--grey7) }
-
-
-
-
-
-/* .container > .text-list > .texts {
-} */
-
-/* .container > .text-list > .texts > .chapter-cont {
-} */
-
-.container > .text-list > .texts {
-    user-select: none;
-    /* flex-grow: 1; */
-
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    overflow: auto;
-    /* height: 300px; */
-}
-
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont {
-    display: grid;
-    grid-template-columns: var(--gtc1) var(--gtc2) var(--gtc3) var(--gtc4) var(--gtc5) var(--gtc6) var(--gtc7);
-    gap: 5px;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
-    padding: 3px 5px;
-}
-body.light .text-list > .texts > .chapter-cont > .chapter-head-cont { background-color: var(--grey2) }
-body.night .text-list > .texts > .chapter-cont > .chapter-head-cont { background-color: var(--grey7) }
-
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont > .cell {
-    margin: 1px 4px;
-}
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont > .chapter-done-pic {
-    pointer-events: none;
-}
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont > .chapter-done-num {
-    pointer-events: none;
-    text-align: end;
-}
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont > .chapter-name {
-    flex-grow: 1;
-    pointer-events: none;
-    font-style: oblique;
-}
-.container > .text-list > .texts > .chapter-cont > .chapter-head-cont > .chapter-cpm, .chapter-wpm, .chapter-acc {
-    text-align: end;
-}
-
+body.light .book-content .loading { background-color: var(--grey2) }
+body.night .book-content .loading { background-color: var(--grey7) }
 
 
 
@@ -791,16 +826,14 @@ body.night .text-list > .texts > .chapter-cont > .chapter-head-cont { background
 .chapter-add-cont {
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
+    gap: var(--gap-5px);
     user-select: none;
 }
 
 .chapter-add-btn {
     flex-basis: 45%;
-    /* width: 50%; */
     flex-grow: 1;
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
+    border-radius: var(--main-border-radius-3px);
     padding: 5px 5px;
     cursor: pointer;
 }
@@ -810,10 +843,8 @@ body.night .chapter-add-btn { background-color: var(--grey7) }
 
 .chapter-add-hide {
     flex-grow: 1;
-    border-radius: 3px;
-    /* margin-bottom: 5px; */
+    border-radius: var(--main-border-radius-3px);
     padding: 5px 5px;
-    /* flex-basis: 90%; */
 }
 
 body.light .chapter-add-hide { background-color: var(--grey2) }
@@ -828,56 +859,15 @@ body.night .chapter-add-hide { background-color: var(--grey7) }
 
 .chapter-add-one-cont, .chapter-add-many {
     display: grid;
-    gap: 5px 10px;
+    gap: var(--gap-5px) 10px;
     grid-template-columns: max-content auto;
 }
 
-.chapter-add-one-chapter-tag, .chapter-add-one-text-tag {
-    /* font-weight: 700; */
-    /* font-size: 20px; */
-}
+.chapter-add-one-chapter-tag, .chapter-add-one-text-tag {}
 .chapter-add-one-save-btn {
     grid-column: span 2;
     font-weight: 700;
     font-size: 20px;
 }
-
-
-
-/* <div class="chapter-add-one-header">Add one chapter</div>
-<div class="chapter-add-one-chapter-tag">Chapter name:</div>
-<input class="chapter-add-one-chapter-input" type="text">
-<div class="chapter-add-one-text-tag">Text:</div>
-<textarea class="chapter-add-one-text-input" name="" id="" cols="30" rows="10"></textarea>
-<button class="chapter-add-one-save-btn">Save</button> */
-
-
-
-
-/* .container > .text-list > .add-text > .cont {
-    border-radius: 3px;
-    margin-bottom: 5px;
-    padding: 5px 5px;
-}
-body.light .text-list > .add-text > .cont { background-color: var(--grey2) }
-body.night .text-list > .add-text > .cont { background-color: var(--grey7) } */
-
-/* .container > .text-list > .add-text > .cont {
-} */
-/* .container > .text-list > .add-text > .cont > .add {
-    font-size: 20px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-} */
-/* .container > .text-list > .add-text > .cont > .cont {
-} */
-/* .container > .text-list > .add-text > .cont > .cont > .add-chapter-input {
-    width: 98%;
-    margin-bottom: 5px;
-}
-.container > .text-list > .add-text > .cont > .cont > .add-text-input {
-    width: 98%;
-} */
 
 </style>

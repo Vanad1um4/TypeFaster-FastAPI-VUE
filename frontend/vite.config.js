@@ -18,5 +18,6 @@ export default defineConfig({
     // assetsDir: 'static/assets',
     // baseUrl: '/static',
     emptyOutDir: true,
+    watch: {},
   },
 })

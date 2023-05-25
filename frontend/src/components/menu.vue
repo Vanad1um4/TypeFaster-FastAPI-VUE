@@ -2,15 +2,25 @@
 
 <div class="menu inner-box">
 
-    <div v-for="menu in menuButtons" v-bind:class="[menu.btnClass, { 'primary-url': $route.name === menu.url }]">
+    <div v-for="menu in menuButtonsArray" v-bind:class="[menu.btnClass, { 'primary-url': $route.name === menu.url }]">
         <a class="a-btn" v-on:click="$router.push({ name: menu.url })"> {{ menu.text }} </a>
     </div>
 
     <div class="menu-button options-drop-down">
         <a class="a-btn"> {{ globalState.user.authenticated ? 'Profile' : 'Login' }} </a>
         <div class="options-content-hide">
-            <div class="options-content-grid">
+            <!-- <div class="options-content-grid"> -->
+
+            <div class="options-content-auth-cont">
                 <!-- <div class="profile-header"> Profile </div> -->
+                <div
+                    v-if="globalState.user.authenticated === false"
+                    class="auth-btn auth-login-btn"
+                    v-on:click="login"
+
+                >
+                    <div class="auth-btn-txt">🔓 Login via github</div>
+                </div>
                 <div
                     v-if="globalState.user.authenticated === true"
                     class="auth-header"
@@ -24,99 +34,142 @@
                     {{ globalState.user.email }}
                 </div>
                 <div
-                    v-if="globalState.user.authenticated === false"
-                    class="auth-btn auth-login-btn"
-                    v-on:click="login"
-
-                >
-                    <div class="auth-btn-txt">🔓 Login via github</div>
-                </div>
-                <div
                     v-if="globalState.user.authenticated === true"
                     class="auth-btn auth-logout-btn"
                     v-on:click="logout"
                 >
                     <div class="auth-btn-txt">🔓 Logout</div>
                 </div>
+            </div>
 
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="options-header"
-                > Settings </div>
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="text dark-mode-text"
-                >{{ options.darkMode.text }}</div>
+            <div
+                v-if="globalState.user.authenticated === true"
+                class="options-content-vis-settings-cont options-dd-content-grid"
+            >
+            
+                <div class="site-options-header">
+                    Visual settings
+                </div>
+                
+                <div class="dark-mode-text">
+                    Dark theme
+                </div>
+                
                 <input
-                    v-if="globalState.user.authenticated === true"
                     type="checkbox"
-                    class="checkbox dark-mode-checkbox"
-                    v-model="options.darkMode.val"
-                    v-bind:disabled="options.darkMode.disabled"
-                    v-on:change="sendOptionsToServer"
+                    class="dark-mode-checkbox"
+                    v-model="globalState.options.darkMode.val"
+                    v-bind:disabled="localOptions.darkMode.disabled"
+                    v-on:change="setOptionsFetch"
                 >
 
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="text width-text"
-                >Max width</div>
+                <div class="width-text" title="You can specify the maximum width of the main window">
+                    <!-- think of a better title phrasing -->
+                    Max width
+                </div>
+                
                 <input
-                    v-if="globalState.user.authenticated === true"
                     type="text"
-                    class="input-field width-input"
+                    class="width-input"
                     title="800 - 3840"
-                    v-model="options.windowWidthInput.val"
-                    v-bind:disabled="options.windowWidthInput.disabled"
-                    v-on:keydown.enter="sendOptionsToServer"
+                    v-model="globalState.options.windowWidthInput.val"
+                    v-bind:disabled="localOptions.windowWidthInput.disabled"
+                    v-on:keydown.enter="setOptionsFetch"
                 >
+                
                 <button
-                    v-if="globalState.user.authenticated === true"
                     type="submit"
                     class="width-save"
-                    v-on:click="sendOptionsToServer"
+                    v-on:click="setOptionsFetch"
                 >💾</button>
 
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="text show-stats-bar-text"
-                >{{ options.showStatsBar.text }}</div>
-                <input
-                    v-if="globalState.user.authenticated === true"
-                    type="checkbox"
-                    class="checkbox show-stats-bar-checkbox"
-                    v-model="options.showStatsBar.val"
-                    v-bind:disabled="options.showStatsBar.disabled"
-                    v-on:change="sendOptionsToServer"
-                >
-
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="text show-progress-bar-text"
-                >{{ options.showProgressBar.text }}</div>
-                <input
-                    v-if="globalState.user.authenticated === true"
-                    type="checkbox"
-                    class="checkbox show-progress-bar-checkbox"
-                    v-model="options.showProgressBar.val"
-                    v-bind:disabled="options.showProgressBar.disabled"
-                    v-on:change="sendOptionsToServer"
-                >
-
-                <div
-                    v-if="globalState.user.authenticated === true"
-                    class="text show-error-history-text"
-                >
-                    {{ options.showErrorHistory.text }}
+                <div class="show-stats-bar-text" title="Show statistics bar while typing">
+                    Stats bar
                 </div>
+                
                 <input
-                    v-if="globalState.user.authenticated === true"
                     type="checkbox"
-                    class="checkbox show-error-history-checkbox"
-                    v-model="options.showErrorHistory.val"
-                    v-bind:disabled="options.showErrorHistory.disabled"
-                    v-on:change="sendOptionsToServer"
+                    class="show-stats-bar-checkbox"
+                    v-model="globalState.options.showStatsBar.val"
+                    v-bind:disabled="localOptions.showStatsBar.disabled"
+                    v-on:change="setOptionsFetch"
                 >
+
+                <div class="show-progress-bar-text" title="Show progress bar while typing">
+                    Progress bar
+                </div>
+                
+                <input
+                    type="checkbox"
+                    class="show-progress-bar-checkbox"
+                    v-model="globalState.options.showProgressBar.val"
+                    v-bind:disabled="localOptions.showProgressBar.disabled"
+                    v-on:change="setOptionsFetch"
+                >
+
+                <div class="show-error-history-text" title="Show errors on finished texts while typing">
+                    Show past errors
+                </div>
+                
+                <input
+                    type="checkbox"
+                    class="show-error-history-checkbox"
+                    v-model="globalState.options.showErrorHistory.val"
+                    v-bind:disabled="localOptions.showErrorHistory.disabled"
+                    v-on:change="setOptionsFetch"
+                >
+
             </div>
+
+            <div
+                v-if="globalState.user.authenticated === true"
+                class="options-content-stats-settings-cont options-dd-content-grid"
+            >
+            
+                <div class="stats-options-header">
+                    Stats calc settings
+                </div>
+                
+                <div class="stats-slice-len-text">
+                    Stats slice length
+                </div>
+                
+                <input
+                    type="text"
+                    class="stats-slice-len-input"
+                    title="Duration of a stats slice. Expected positive number of minutes."
+                    v-model="globalState.options.statsSliceLengthMinutes.val"
+                    v-bind:disabled="localOptions.statsSliceLengthMinutes.disabled"
+                    v-on:keydown.enter="setOptionsFetch"
+                >
+
+                <button
+                    type="submit"
+                    class="stats-slice-len-save"
+                    v-on:click="setOptionsFetch"
+                >💾</button>
+
+                <div class="stats-use-n-slices-text">
+                    Use stats slices
+                </div>
+                
+                <input
+                    type="text"
+                    class="stats-use-n-slices-input"
+                    title="How namy last stats slices will be used to calculate your CPM, WPM, ACC. Positive integer number expected."
+                    v-model="globalState.options.useNLastMinutesForStats.val"
+                    v-bind:disabled="localOptions.useNLastMinutesForStats.disabled"
+                    v-on:keydown.enter="setOptionsFetch"
+                >
+                    
+                <button
+                    type="submit"
+                    class="stats-use-n-slices-save"
+                    v-on:click="setOptionsFetch"
+                >💾</button>
+
+            </div>
+
         </div>
     </div>
 </div>
@@ -130,144 +183,171 @@
 
 
 <script setup>
-
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, watch } from 'vue';
 import Modals from './modals.vue'
 import { globalState } from '../state.js'
 
 const modalsRef = ref()
 
-const menuButtons = [
-    { text: 'Library', type: 'btn', url: 'library', btnClass: 'menu-button books'},
-    { text: 'Type', type: 'btn', url: 'type', btnClass: 'menu-button type'},
-    { text: 'Statistics', type: 'btn', url: 'stats' , btnClass: 'menu-button stats'},
-    { text: '', type: 'divider', btnClass: 'menu-button-divider'},
-    // { text: '👤️️', type: 'options' , btnClass: 'menu-button options-drop-down'},
-    // { text: '🛠️️', type: 'options' , btnClass: 'menu-button options-drop-down'},
+const menuButtonsArray = [
+    { 'text': 'Library', 'type': 'btn', 'url': 'library', 'btnClass': 'menu-button books'},
+    { 'text': 'Type', 'type': 'btn', 'url': 'type', 'btnClass': 'menu-button type'},
+    { 'text': 'Statistics', 'type': 'btn', 'url': 'stats' , 'btnClass': 'menu-button stats'},
+    { 'text': '', 'type': 'divider', 'btnClass': 'menu-button-divider'},
 ]
 
-// const user = reactive ({
-//     authenticated: false,
-//     email: '',
-// })
-
-const options = reactive({
-    darkMode: { text: 'Dark theme', val: false, disabled: true },
-    windowWidthInput: { text: 'Main width', val: 1000, disabled: false },
-    windowWidthBtn: { disabled: false }, // TODO
-    showStatsBar: { text: 'Show stats bar', val: true, disabled: false },
-    showProgressBar: { text: 'Show progress bar', val: true, disabled: false },
-    showErrorHistory: { text: 'Show error history', val: true, disabled: false },
+const localOptions = reactive({
+    // site options
+    'darkMode': {'disabled': true},
+    'windowWidthInput': {'disabled': false},
+    // 'windowWidthBtn': { 'disabled': false }, // TODO
+    'showStatsBar': {'disabled': false},
+    'showProgressBar': {'disabled': false},
+    'showErrorHistory': {'disabled': false},
+    // stats options
+    // TODO
+    'statsSliceLengthMinutes': {'val': 60},
+    'useNLastMinutesForStats': {'val': 5},
 })
 
-function applyVars() {
-    if (options.darkMode.val === true) {
+
+function reapplyVars() {
+    if (globalState.options.darkMode.val === true) {
         mainBody.classList.remove('light')
         mainBody.classList.add('night')
-    } else if (options.darkMode.val === false) {
+    } else if (globalState.options.darkMode.val === false) {
         mainBody.classList.remove('night')
         mainBody.classList.add('light')
     }
 
-    root.style.setProperty('--main-width', `${options.windowWidthInput.val}px`);
+    root.style.setProperty('--main-width', `${globalState.options.windowWidthInput.val}px`);
 
-    if (options.showStatsBar.val === true) {
+    if (globalState.options.showStatsBar.val === true) {
         mainBody.classList.remove('hide-stats-bar')
     } else {
         mainBody.classList.add('hide-stats-bar')
     }
 
-    if (options.showProgressBar.val === true) {
+    if (globalState.options.showProgressBar.val === true) {
         mainBody.classList.remove('hide-progress-bar')
     } else {
         mainBody.classList.add('hide-progress-bar')
     }
 
-    if (options.showErrorHistory.val === true) {
+    if (globalState.options.showErrorHistory.val === true) {
         mainBody.classList.remove('hide-error-history')
     } else {
         mainBody.classList.add('hide-error-history')
     }
 }
 
-function windowWidthValidate() {
-    const value = parseInt(options.windowWidthInput.val)
-    if (value < 800) {
-        options.windowWidthInput.val = 800
-    } else if (value > 3840) {
-        options.windowWidthInput.val = 3840
-    } else if (isNaN(value)) {
-        options.windowWidthInput.val = 1000
+
+function blockInputFields() {
+    localOptions.darkMode.disabled = true
+    localOptions.windowWidthInput.disabled = true
+    localOptions.showStatsBar.disabled = true
+    localOptions.showProgressBar.disabled = true
+    localOptions.showErrorHistory.disabled = true
+    localOptions.statsSliceLengthMinutes.disabled = true
+    localOptions.useNLastMinutesForStats.disabled = true
+}
+
+
+function unblockInputFields() {
+    localOptions.darkMode.disabled = false
+    localOptions.windowWidthInput.disabled = false
+    localOptions.showStatsBar.disabled = false
+    localOptions.showProgressBar.disabled = false
+    localOptions.showErrorHistory.disabled = false
+    localOptions.statsSliceLengthMinutes.disabled = false
+    localOptions.useNLastMinutesForStats.disabled = false
+}
+
+
+function optionInputsValidate() {
+    const windowWidthValue = parseInt(globalState.options.windowWidthInput.val)
+    if (windowWidthValue < 800) {
+        pushNotification('Should be 800 pixels or more, setting to 800...', 'info', 5)
+        globalState.options.windowWidthInput.val = 800
+    } else if (windowWidthValue > 3840) {
+        pushNotification('Should be 3840 pixels or less, setting to 3840...', 'info', 5)
+        globalState.options.windowWidthInput.val = 3840
+    } else if (isNaN(windowWidthValue)) {
+        pushNotification('Should be a positive integer number from 800 to 3840, setting 1000...', 'info', 5)
+        globalState.options.windowWidthInput.val = 1000
     } else {
-        options.windowWidthInput.val = value
+        globalState.options.windowWidthInput.val = windowWidthValue
+    }
+
+    const statsSliceLengthMinutesValue = parseInt(globalState.options.statsSliceLengthMinutes.val)
+    if (statsSliceLengthMinutesValue < 1 || statsSliceLengthMinutesValue > 1_000_000 || isNaN(statsSliceLengthMinutesValue)) {
+        pushNotification('Should be a reasonable positive integer number of minutes, setting to 60', 'info', 5)
+        globalState.options.statsSliceLengthMinutes.val = 60
+    } else {
+        globalState.options.statsSliceLengthMinutes.val = statsSliceLengthMinutesValue
+    }
+    
+    const useNLastMinutesForStatsValue = parseInt(globalState.options.useNLastMinutesForStats.val)
+    if (useNLastMinutesForStatsValue < 1 || useNLastMinutesForStatsValue > 1_000_000 || isNaN(useNLastMinutesForStatsValue)) {
+        pushNotification('Should be a reasonable positive integer number of minutes, setting to 60', 'info', 5)
+        globalState.options.useNLastMinutesForStats.val = 60
+    } else {
+        globalState.options.useNLastMinutesForStats.val = useNLastMinutesForStatsValue
     }
 }
 
-function sendOptionsToServer() {
-    windowWidthValidate()
-    applyVars()
+
+function setOptionsFetch() {
+    optionInputsValidate()
+    reapplyVars()
     const requestData = {
-        method: 'PUT',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            'dark_mode': options.darkMode.val,
-            'window_width': options.windowWidthInput.val,
-            'show_stats_bar': options.showStatsBar.val,
-            'show_progress_bar': options.showProgressBar.val,
-            'show_error_history': options.showErrorHistory.val,
+        'method': 'PUT',
+        'headers': { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        'body': JSON.stringify({
+            'dark_mode': globalState.options.darkMode.val,
+            'window_width': globalState.options.windowWidthInput.val,
+            'show_stats_bar': globalState.options.showStatsBar.val,
+            'show_progress_bar': globalState.options.showProgressBar.val,
+            'show_error_history': globalState.options.showErrorHistory.val,
+            'stats_slice_length_minutes': globalState.options.statsSliceLengthMinutes.val,
+            'use_n_last_minutes_for_stats': globalState.options.useNLastMinutesForStats.val,
         })
     }
-    options.darkMode.disabled = true
-    options.windowWidthInput.disabled = true
-    options.showStatsBar.disabled = true
-    options.showProgressBar.disabled = true
-    options.showErrorHistory.disabled = true
+    blockInputFields()
     fetch(`/api/user/`, requestData)
         .then(response => {
+            // console.log('set', response)
             if (response.status === 204) {
-                options.darkMode.disabled = false
-                options.windowWidthInput.disabled = false
-                options.showStatsBar.disabled = false
-                options.showProgressBar.disabled = false
-                options.showErrorHistory.disabled = false
+                unblockInputFields()
             } else {
                 pushNotification('Some error has occured...', 'error', 5)
             }
         })
 }
 
-function getOptionsFromServer() {
+
+function getOptionsFetch() {
     const requestData = {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        'method': 'GET',
+        'headers': { 'Accept': 'application/json', 'Content-Type': 'application/json' }
     }
-    options.darkMode.disabled = true
-    options.windowWidthInput.disabled = true
-    options.showStatsBar.disabled = true
-    options.showProgressBar.disabled = true
-    options.showErrorHistory.disabled = true
+    blockInputFields()
     fetch('/api/user/', requestData)
         .then( response => {
             if (response.status === 200) {
                 response.json().then( result => {
-                    console.log(result)
+                    // console.log('get', result)
                     globalState.user.authenticated = result.authenticated
                     globalState.user.email = result.email
-                    options.darkMode.val = result.dark_mode
-                    options.windowWidthInput.val = result.window_width
-                    options.showStatsBar.val = result.show_stats_bar
-                    options.showProgressBar.val = result.show_progress_bar
-                    options.showErrorHistory.val = result.show_error_history
-
-                    if (globalState.user.authenticated === true) {
-                        options.darkMode.disabled = false
-                        options.windowWidthInput.disabled = false
-                        options.showStatsBar.disabled = false
-                        options.showProgressBar.disabled = false
-                        options.showErrorHistory.disabled = false
-                    }
-
-                    applyVars()
+                    globalState.options.darkMode.val = result.dark_mode
+                    globalState.options.windowWidthInput.val = result.window_width
+                    globalState.options.showStatsBar.val = result.show_stats_bar
+                    globalState.options.showProgressBar.val = result.show_progress_bar
+                    globalState.options.showErrorHistory.val = result.show_error_history
+                    globalState.options.statsSliceLengthMinutes.val = result.stats_slice_length_minutes
+                    globalState.options.useNLastMinutesForStats.val = result.use_n_last_minutes_for_stats
+                    unblockInputFields()
+                    reapplyVars()
                 })
             } else {
                 pushNotification('Some error has occured...', 'error', 5)
@@ -275,24 +355,31 @@ function getOptionsFromServer() {
         })
 }
 
-let mainBody, root
-onMounted(() => {
-    getOptionsFromServer()
-    root = document.querySelector(':root')
-    mainBody = document.querySelector('body')
-})
 
 function login() {
     window.location.href = '/github_login'
 }
+
+
 function logout() {
     window.location.href = '/logout'
 }
+
 
 function pushNotification(txt, category, seconds) { // possible categories: 'error', 'warning', 'good' and 'info'
     modalsRef.value.addNotification(txt, category, seconds)
 }
 
+
+let mainBody, root
+
+onMounted(() => {
+    getOptionsFetch()
+    root = document.querySelector(':root')
+    mainBody = document.querySelector('body')
+})
+
+// watch(() => options.darkMode.val, (new_val) => {globalState.options.darkMode = new_val})
 </script>
 
 <!-- <script>
@@ -307,9 +394,17 @@ export default {
 
 
 
+<style>
+:root {
+    --optionsGTC1: 180px;
+    --optionsGTC2: 53px;
+    --optionsGTC3: 28px;
+    --optionsGapH: 7px;
+    --optionsGapV: 7px;
+}
+</style>
 
 <style scoped>
-
 .menu {
     display: flex;
     gap: 5px;
@@ -349,15 +444,13 @@ body.night .menu-button>.a-btn { color: var(--grey3) }
 }
 
 body.light .menu-button:hover { background-color: var(--grey3); }
-body.night .menu-button:hover { background-color: var(--grey6); }
-
 body.light .menu-button:hover>.a-btn { color: var(--grey8); }
-body.night .menu-button:hover>.a-btn { color: var(--grey2); }
-
 body.light .menu-button.primary-url { background-color: var(--grey7); }
-body.night .menu-button.primary-url { background-color: var(--grey3); }
-
 body.light .menu-button.primary-url>.a-btn { color: var(--grey2); }
+
+body.night .menu-button:hover { background-color: var(--grey6); }
+body.night .menu-button:hover>.a-btn { color: var(--grey2); }
+body.night .menu-button.primary-url { background-color: var(--grey3); }
 body.night .menu-button.primary-url>.a-btn { color: var(--grey9); }
 
 
@@ -388,45 +481,53 @@ body.night .menu-button.primary-url>.a-btn { color: var(--grey9); }
 }
 
 body.light .options-content-hide {
+    color: var(--grey8);
     background-color: var(--grey2);
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
     border: 1px solid #b1b1b1;
 }
 body.night .options-content-hide {
+    color: var(--grey2);
     background-color: var(--grey8);
-    /* box-shadow: 0px 8px 16px 0px rgba(255,255,255,0.2); */
     box-shadow: 0 8px 16px rgb(255 255 255 / 10%);
-
     border: 1px solid var(--grey6);
 }
 
-.options-drop-down .options-content-grid {
+
+
+.options-dd-content-grid {
     display: grid;
-    grid-template-columns: 163px 53px 28px;
-    grid-gap: 10px 6px;
+    grid-template-columns: var(--optionsGTC1) var(--optionsGTC2) var(--optionsGTC3);
+    grid-gap: var(--optionsGapH) var(--optionsGapV);
     font-size: 21px;
 }
 
 
-.profile-header, .options-header {
-    grid-column: span 3;
+
+.options-content-auth-cont {
+    width: calc(var(--optionsGTC1) + var(--optionsGapV) + var(--optionsGTC2) + var(--optionsGapV) + var(--optionsGTC3))
+}
+
+/* .profile-header {
     text-align: center;
     font-weight: bold;
     font-size: 23px;
-}
+} */
 .auth-header {
-    grid-column: span 3;
+    text-align: center;
+    font-weight: bold;
+    font-size: 23px;
+    margin-bottom: 7px;
 }
 .auth-email {
-    grid-column: span 3;
+    font-size: 23px;
+    margin-bottom: 7px;
     white-space: nowrap;
     overflow: hidden;
 }
 .auth-login-btn {
-    grid-column: span 3;
 }
 .auth-logout-btn {
-    grid-column: span 3;
 }
 .auth-btn {
     display: flex;
@@ -465,11 +566,17 @@ body.night .auth-btn:hover>div { color: var(--grey2); }
 
 
 
-
-.options-header {
-    margin-top: 20px;
+.options-content-vis-settings-cont {
+    margin-top: 30px;
+}
+.site-options-header {
+    grid-column: span 3;
+    text-align: center;
+    font-weight: bold;
+    font-size: 23px;
 }
 .options-drop-down .dark-mode-text {
+    white-space: nowrap;
     grid-column: span 2
 }
 .options-drop-down .dark-mode-checkbox {
@@ -508,9 +615,40 @@ body.night .auth-btn:hover>div { color: var(--grey2); }
     transform: scale(1.2);
 }
 
-.options-drop-down .text {
-    white-space: nowrap;
-    /* font-weight: bold; */
+
+
+
+
+
+.options-content-stats-settings-cont {
+    margin-top: 30px;
+}
+.stats-options-header {
+    grid-column: span 3;
+    text-align: center;
+    font-weight: bold;
+    font-size: 23px;
+}
+.stats-slice-len-text {
+    /* grid-column: span 2 */
+}
+.stats-slice-len-input {
+    font-size: 17px;
+}
+
+.stats-slice-len-save {
+    font-size: 17px;
+    padding: 0px 0px;
+}
+.stats-use-n-slices-text {
+    /* grid-column: span 2 */
+}
+.stats-use-n-slices-input {
+    font-size: 17px;
+}
+.stats-use-n-slices-save {
+    font-size: 17px;
+    padding: 0px 0px;
 }
 
 </style>

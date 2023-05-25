@@ -16,6 +16,7 @@ SESSION_EXPIRATION_TIME_HOURS = 24 * 30  # 1 month
 
 # DB settings
 DB_HOST = 'db_url_goes_here'
+DB_PORT = '5432'
 DB_NAME = 'db_name_goes_here'
 DB_USER = 'db_user_goes_here'
 DB_PASS = 'db_password_goes_here'
