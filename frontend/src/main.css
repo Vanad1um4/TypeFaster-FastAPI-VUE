@@ -1,7 +1,9 @@
 :root {
     --main-width: 1000px;
     --padding: 5px;
-    --gap: 8px;
+    --gap-8px: 8px;
+    --gap-5px: 5px;
+    --main-border-radius-3px: 3px;
     --white: white;
     --grey1: #f2f2f2;
     --grey2: #d8d8d8;
@@ -29,8 +31,8 @@ body.night { background-color: var(--black); }
 
 .wrapper {
     display: grid;
-    gap: var(--gap);
-    /* grid-template-columns: calc(var(--main-width) + var(--padding)*4 + var(--gap)*2); */
+    gap: var(--gap-8px);
+    /* grid-template-columns: calc(var(--main-width) + var(--padding)*4 + var(--gap-8px)*2); */
     /* grid-template-columns: var(--main-width); */
     /* grid-template-rows: min-content 92vh; */
     /* justify-content: center; */
@@ -40,7 +42,7 @@ body.night { background-color: var(--black); }
     flex-direction: column;
     min-width: 800px;
     width: var(--main-width);
-    margin: 0px var(--gap);
+    margin: 0px var(--gap-8px);
 }
 
 .outer-box {
@@ -50,12 +52,12 @@ body.night { background-color: var(--black); }
 }
 
 .outer-box.header {
-    margin-top: var(--gap);
+    margin-top: var(--gap-8px);
 }
 .outer-box.content {
     flex: 1 0 auto;
     height: 1%;
-    margin-bottom: var(--gap);
+    margin-bottom: var(--gap-8px);
 
     display: flex;
     flex-direction: column;
