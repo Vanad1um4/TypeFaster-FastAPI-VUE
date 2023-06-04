@@ -36,14 +36,22 @@
         class="main-scroll"
     >
         <div v-for="(text, textId) in texts" v-bind:class="['text' + textId, textId == typeState.currTextId ? 'active' : 'inactive']">
+
             <span v-for="char in text.chars" v-bind:class="char.res"> {{ char.ch }} </span>
-            <!-- ugly condition to detect a current char -->
+
             <span
                 v-bind:class="[
                     'next-text',
                     (textId == typeState.currTextId && typeState.currCharId == Object.keys(texts[typeState.currTextId]['chars']).length) ? 'current' : ''
                 ]"
             >⏎</span>
+
+            <div class="loading-cont" style="display: none">
+                <img v-bind:src="waitImg" class="wait-img" style="display: none" title="Sending statistics back to server...">
+                <img v-bind:src="goodImg" class="good-img" style="display: none" title="Stats have been successfully uploaded to the server.">
+                <img v-bind:src="badImg" class="bad-img" style="display: none" title="Some error has occured...">
+            </div>
+
         </div>
     </div>
 
@@ -64,6 +72,10 @@ import { globalState } from '../state.js'
 import { useRoute } from 'vue-router'
 import Modals from './modals.vue'
 import router from '../router.js'
+
+import waitImg from '@/pics/wait.png'
+import goodImg from '@/pics/good.png'
+import badImg from '@/pics/bad.png'
 
 const route = useRoute()
 const modalsRef = ref()
@@ -396,6 +408,14 @@ function getNextBatchOfTextsFetch(textId) {
 
 
 function statsSendFetch(textId, errors, time_sum, statsArray) {
+    const sendingStatsResultWait = document.querySelector(`.text${textId} .wait-img`)
+    const sendingStatsResultGood = document.querySelector(`.text${textId} .good-img`)
+    const sendingStatsResultBad = document.querySelector(`.text${textId} .bad-img`)
+    const sendingStatsCont = document.querySelector(`.text${textId} .loading-cont`)
+    
+    sendingStatsResultWait.style.display = 'block'
+    sendingStatsCont.style.display = 'block'
+    
     const argsObj = {
         errors: errors,
         time: time_sum,
@@ -408,13 +428,18 @@ function statsSendFetch(textId, errors, time_sum, statsArray) {
             stats_list: statsArray
         })
     }
+
     fetch(`/api/stats/${textId}/`, requestData)
         .then( response => {
             if (response.status === 200) {
                 response.json().then( result => {
                     // console.log('/api/stats/${textId}/', result)
+                    sendingStatsResultWait.style.display = 'none'
+                    sendingStatsResultGood.style.display = 'block'
                 })
             } else {
+                sendingStatsResultWait.style.display = 'none'
+                sendingStatsResultBad.style.display = 'block'
                 pushNotification('Some error has occured...', 'error')
             }
         })
@@ -578,5 +603,28 @@ body.night .neutral { color: var(--grey4) }
 .inactive {
     filter: opacity(50%);
 }
+
+
+
+
+
+.main-scroll .active {
+    border-radius: 3px;
+    position: relative;
+}
+
+.loading-cont {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.wait-img, .good-img, .bad-img {
+    width: 25px;
+    height: 25px;
+}
+
+body.light .wait-img, .good-img, .bad-img { filter: opacity(50%); }
+body.night .wait-img, .good-img, .bad-img { filter: opacity(70%); }
 
 </style>
