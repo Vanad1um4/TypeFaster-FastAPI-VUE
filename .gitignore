@@ -38,6 +38,7 @@ test.py
 nohup.out
 static_old
 secrets.py
+secrets-backend.py
 package-lock.json
 frontend/package-lock.json
 db_utils

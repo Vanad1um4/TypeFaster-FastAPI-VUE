@@ -1,5 +1,7 @@
 <template>
     <div v-show="globalState.user.authenticated" class="main-container">
+        
+        <!-- BOOKS LIST -->
         <div class="book-list">
             <div
                 v-for="book in books"
@@ -18,68 +20,9 @@
         </div>
 
         <div class="book-content">
-
-            <div v-show="divState.newBook.visible" class="new-book">
-                
-                <div class="new-book-header">
-                    Add new book to your library
-                </div>
-
-                <div class="new-book-title-field-div">
-                    <input
-                        v-model=divState.newBook.createNewBookTitle
-                        class="new-book-title-input"
-                        type="text"
-                        v-on:keydown.enter="clickedCreateBook()"
-                        placeholder="Enter title of the book here"
-                    >
-                </div>
-                
-                <div
-                    v-for="tab in addBookTypeTabs"
-                    v-bind:class="tab.active ? 'active' : 'inactive'"
-                    class="new-book-add-text-tab"
-                    v-on:click="switchAddBookTab(tab)"
-                >
-                    {{ tab.txt }}
-                </div>
-                
-                <div
-                    v-show="addBookTypeTabs.paste.active"
-                    class="new-book-add-text-selected-tab-paste"
-                >
-                    <textarea
-                        v-model="divState.newBook.createNewBookText"
-                        class="new-book-text-input"
-                        placeholder="Paste text here"
-                        rows="10"
-                    ></textarea>
-                </div>
-
-                <div
-                    v-show="addBookTypeTabs.upload.active"
-                    class="new-book-add-text-selected-tab-upload"
-                >
-                    <!-- TODO: implement sometime later... -->
-                    Coming soon... 
-                </div>
-
-                <div 
-                    v-bind:class="['new-book-add-btn', divState.newBook.ready == false ? 'deactivated' : '']"
-                    v-on:click="clickedCreateBook()"
-                >
-                    Add
-                </div>
-
-                <div 
-                    v-bind:class="['new-book-cancel-btn', divState.newBook.ready == false ? 'deactivated' : '']"
-                    v-on:click="clickedCancelCreateBook()"
-                >
-                    Cancel
-                </div>
-                
-            </div>
-
+            
+            
+            <!-- SELECTED BOOK DISPLAY -->
             <div v-show="divState.selectedBook.visible" class="selected-book">
 
                 <div class="selected-book-header">
@@ -166,6 +109,7 @@
                     >
                         It will take approximately {{ divState.selectedBook.timeRemainesApprox.h }} hours and {{ divState.selectedBook.timeRemainesApprox.m }} minutes for you to finish the book.
                     </div>
+                    <!-- <button>Add more texts</button> -->
                 </div>
 
                 <div
@@ -175,17 +119,102 @@
                     <Line :data="chartData" :options="chartOptions" />
                 </div>
 
-                <div
-                    v-bind:class="['selected-book-start-btn', divState.selectedBook.nextTextToType === -1 ? 'deactivated' : '']"
-                    v-on:click="typeBookBtnClicked"
-                >
-                    <div class="selected-book-start-btn-txt">
+                <div class="selected-book-buttons">
+                    <div
+                        v-bind:class="['selected-book-btn', 'selected-book-start-btn', divState.selectedBook.nextTextToType === -1 ? 'deactivated' : '']"
+                        v-on:click="typeBookBtnClicked"
+                    >
                         {{ divState.selectedBook.nextTextToType === -1 ? 'Book finished' : divState.selectedBook.charsDoneSum === 0 ? 'Click here to begin typing' : 'Click here to continue typing' }}
+                    </div>
+                    <div
+                        v-bind:class="['selected-book-btn', 'selected-book-add-text-btn']"
+                        v-on:click="addMoreTextsToExistingBook"
+                    >
+                        Add more texts
                     </div>
                 </div>
 
             </div>
 
+            
+
+            <!-- HEADER OF A NEW BOOK SECTION -->
+            <div v-show="divState.newTitle.visibleCont" class="new-book">
+                
+                <div class="new-book-header">
+                    Add new book to your library
+                </div>
+
+                <div class="new-book-title-field-div">
+                    <input
+                        v-model=divState.newTitle.value
+                        class="new-book-title-input"
+                        type="text"
+                        placeholder="Enter title of the book here"
+                    >
+                </div>
+                
+            </div>
+            
+            
+
+            <!-- ADD TEXTS FIELDS -->
+            <div v-show="divState.newTexts.visibleCont" class="new-texts-fields">
+
+                <div
+                    v-for="tab in divState.newTexts.tabs"
+                    v-bind:class="tab.active ? 'active' : 'inactive'"
+                    class="new-texts-add-text-tab"
+                    v-on:click="switchAddBookTab(tab)"
+                >
+                    {{ tab.text }}
+                </div>
+                
+                <div
+                    v-show="divState.newTexts.tabs.paste.active"
+                    class="new-texts-add-text-selected-tab-paste"
+                >
+                    <textarea
+                        v-model="divState.newTexts.textToAdd"
+                        class="new-texts-text-input"
+                        placeholder="Paste text here"
+                        rows="10"
+                    ></textarea>
+                </div>
+
+                <div
+                    v-show="divState.newTexts.tabs.upload.active"
+                    class="new-texts-add-text-selected-tab-upload"
+                >
+                    <!-- TODO: implement sometime later... -->
+                    Coming soon... 
+                </div>
+                
+            </div>
+
+
+
+            <!-- ADD TEXTS BUTTONS -->
+            <div v-show="divState.addTextButtons.visibleCont" class="new-texts-btns">
+                <div 
+                    v-bind:class="['new-texts-add-btn', divState.addTextButtons.ready == false ? 'deactivated' : '']"
+                    v-on:click="clickedAddTexts()"
+                >
+                    Add
+                </div>
+
+                <div 
+                    v-bind:class="['new-texts-cancel-btn', divState.addTextButtons.ready == false ? 'deactivated' : '']"
+                    v-on:click="clickedCancelCreateBook()"
+                >
+                    Cancel
+                </div>
+
+            </div>
+
+
+
+            <!-- LOADING INDICATOR -->
             <div v-show="divState.loadingGif.visible" class="loading">
                 <img v-bind:src="loadingImageUrl" class="loading-gif">
             </div>
@@ -212,17 +241,11 @@ import { chartOptions as importedChartOptions, chartColors as importedChartColor
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'
 import { Line } from 'vue-chartjs'
 
-
 const modalsRef = ref()
-const books = reactive([])
-const addBookTypeTabs = reactive({
-    paste: {txt: 'Вставить текст', active: true},
-    upload: {txt: 'Вставить файл', active: false},
-})
 const renameBookInput = ref()
+const books = reactive([])
 
 const divState = reactive({
-    newBook: {visible: false, ready: true, createNewBookTitle: '', createNewBookText: ''},
     selectedBook: {
         id: 0,
         visible: false,
@@ -243,7 +266,21 @@ const divState = reactive({
         charsDoneSum: 0,
     },
     loadingGif: {visible: false},
-    addText: {visibleMain: false, visibleOne: true, visibleMany: false},
+    newTitle: {visibleCont: false, value: ''},
+    newTexts: {
+        visibleCont: false,
+        visibleOne: true,
+        visibleMany: false,
+        tabs: {
+            paste: {text: 'Upload text', active: true},
+            upload: {text: 'Upload a file', active: false},
+        },
+        textToAdd: ''
+    },
+    addTextButtons: {
+        visibleCont: false,
+        ready: true,
+    },
 })
 
 const actionState = reactive({
@@ -292,9 +329,10 @@ ChartJS.register(
 
 
 function bookClicked(event) {
-    divState.newBook.visible = false
     divState.selectedBook.renameVisible = false
-    divState.addText.visibleMain = false
+    divState.newTitle.visibleCont = false
+    divState.newTexts.visibleCont = false
+    divState.addTextButtons.visibleCont = false
 
     const bookId = event.target.id
     const bookName = event.target.childNodes[0].textContent
@@ -305,19 +343,22 @@ function bookClicked(event) {
 
 
 function addBookClicked() {
-    divState.newBook.visible = true
+    divState.newTitle.visibleCont = true
+    divState.newTexts.visibleCont = true
+    divState.addTextButtons.visibleCont = true
     divState.selectedBook.visible = false
+    divState.selectedBook.id = 0
 }
 
 
 function switchAddBookTab(tab) {
     if (!tab.active) {
-        if (addBookTypeTabs.paste.active === true) {
-            addBookTypeTabs.paste.active = false
-            addBookTypeTabs.upload.active = true
+        if (divState.newTexts.tabs.paste.active === true) {
+            divState.newTexts.tabs.paste.active = false
+            divState.newTexts.tabs.upload.active = true
         } else {
-            addBookTypeTabs.paste.active = true
-            addBookTypeTabs.upload.active = false
+            divState.newTexts.tabs.paste.active = true
+            divState.newTexts.tabs.upload.active = false
         }
     }
 }
@@ -358,27 +399,43 @@ function validateBookText(text) {
 }
 
 
-function clickedCreateBook() {
-    if (!divState.newBook.ready) {
+function addMoreTextsToExistingBook() {
+    divState.newTexts.visibleCont = !divState.newTexts.visibleCont
+    divState.addTextButtons.visibleCont = !divState.addTextButtons.visibleCont
+}
+
+function clickedAddTexts() {
+    if (!divState.addTextButtons.ready) {
         pushNotification('Please give server a chance to respond :)', 'info')
         return
     }
-    const title = validateBookTitle(divState.newBook.createNewBookTitle)
-    const text = validateBookText(divState.newBook.createNewBookText)
-    if (!title || !text) {
-        pushNotification('Aborting...', 'info')
-        return
+    if (divState.selectedBook.id) {
+        const text = validateBookText(divState.newTexts.textToAdd)
+        if (!text) {
+            pushNotification('Aborting...', 'info')
+            return
+        }
+        addMoreTextToABookFetch(text)
+    } else {
+        const title = validateBookTitle(divState.newTitle.value)
+        const text = validateBookText(divState.newTexts.textToAdd)
+        if (!title || !text) {
+            pushNotification('Aborting...', 'info')
+            return
+        }
+        createBookFetch(title, text)
     }
-    createBookFetch(title, text)
 }
 
 
 function clickedCancelCreateBook() {
-    if (!divState.newBook.ready) {
+    if (!divState.addTextButtons.ready) {
         pushNotification('Please give server a chance to respond :)', 'info')
         return
     }
-    divState.newBook.visible = false
+    divState.newTitle.visibleCont = false
+    divState.newTexts.visibleCont = false
+    divState.addTextButtons.visibleCont = false
 }
 
 
@@ -435,8 +492,30 @@ function parseResponseWithStats(res) {
 
 ////////////////////////////////////////////////////////////// BOOK FETCHES ///
 
+function addMoreTextToABookFetch(bookText) {
+    const bookId = divState.selectedBook.id
+    const requestData = {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            text: bookText
+        })
+    }
+    fetch(`/api/books/${bookId}/`, requestData)
+        .then( response => {
+            if (response.status === 204) {
+                getBooksFetch()
+                pushNotification('Book extended successfully', 'good')
+            } else {
+                pushNotification('Something went wrong', 'error')
+            }
+            divState.addTextButtons.ready = true
+        })
+}
+
+
 function createBookFetch(bookTitle, bookText) {
-    divState.newBook.ready = false
+    divState.addTextButtons.ready = false
     const requestData = {
         method: 'POST',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
@@ -455,7 +534,7 @@ function createBookFetch(bookTitle, bookText) {
             } else {
                 pushNotification('Something went wrong', 'error')
             }
-            divState.newBook.ready = true
+            divState.addTextButtons.ready = true
         })
 }
 
@@ -483,9 +562,10 @@ function getTheBooksStatsFetch(bookId) {
 
 
 function getBooksFetch() {
-    divState.newBook.visible = false
-    divState.addText.visibleMain = false
+    divState.newTitle.visibleCont = false
+    divState.newTexts.visibleCont = false
     divState.selectedBook.visible = false
+    divState.addTextButtons.visibleCont = false
     books.length = 0
     const requestData = {
         method: 'GET',
@@ -643,77 +723,6 @@ body.night .main-container > .book-list > .hoverable:hover {
 
 
 
-
-
-.new-book {
-    display: grid;
-    grid-template-columns: 50% 50%;
-    flex-direction: column;
-    gap: var(--gap-5px);
-
-    font-weight: 700;
-    font-size: 20px;
-}
-.new-book > * {
-    border-radius: var(--main-border-radius-3px);
-    padding: 5px 5px;
-}
-body.light .new-book > * { background-color: var(--grey2) }
-body.night .new-book > * { background-color: var(--grey7) }
-
-.new-book-header,
-.new-book-title-field-div,
-.new-book-add-text-selected-tab-paste,
-.new-book-add-text-selected-tab-upload {
-    grid-column: span 2;
-}
-
-body.light .new-book-add-text-tab.inactive { color: var(--grey4) }
-body.night .new-book-add-text-tab.inactive { color: var(--grey5) }
-
-.new-book-add-text-tab, 
-.new-book-add-btn,
-.new-book-cancel-btn {
-    text-align: center;
-    cursor: pointer;
-    user-select: none;
-}
-.new-book-add-btn.deactivated,
-.new-book-cancel-btn.deactivated {
-    cursor: not-allowed;
-}
-body.light .new-book-add-btn { background-color: #68c968 }
-body.night .new-book-add-btn { background-color: #076c07 }
-
-body.light .new-book-add-btn.deactivated { color: var(--grey3) }
-body.light .new-book-add-btn.deactivated { background-color: var(--grey2) }
-body.night .new-book-add-btn.deactivated { color: var(--grey6) }
-body.night .new-book-add-btn.deactivated { background-color: var(--grey7) }
-
-body.light .new-book-cancel-btn { background-color: #e77b7b }
-body.night .new-book-cancel-btn { background-color: #891616 }
-
-body.light .new-book-cancel-btn.deactivated { color: var(--grey3) }
-body.light .new-book-cancel-btn.deactivated { background-color: var(--grey2) }
-body.night .new-book-cancel-btn.deactivated { color: var(--grey6) }
-body.night .new-book-cancel-btn.deactivated { background-color: var(--grey7) }
-
-.new-book-title-input,
-.new-book-text-input {
-    width: -webkit-fill-available;
-}
-.new-book-title-input {
-    font-size: 17px;
-}
-.new-book-text-input {
-    word-wrap: normal;
-}
-
-
-
-
-
-
 .selected-book {
     display: flex;
     flex-direction: column;
@@ -785,7 +794,12 @@ body.night .selected-book-stats { background-color: var(--grey7) }
 
 
 
-.selected-book-start-btn {
+.selected-book-buttons {
+    display: flex;
+    gap: var(--gap-5px);
+}
+
+.selected-book-btn {
     border-radius: var(--main-border-radius-3px);
     padding: 8px 5px;
     font-weight: 700;
@@ -793,14 +807,145 @@ body.night .selected-book-stats { background-color: var(--grey7) }
     text-align: center;
     cursor: pointer;
 }
-.selected-book-start-btn.deactivated {
+.selected-book-btn.deactivated {
     cursor: not-allowed;
 }
-body.light .selected-book-start-btn { background-color: var(--grey2) }
-body.night .selected-book-start-btn { background-color: var(--grey7) }
+body.light .selected-book-btn { background-color: var(--grey2) }
+body.night .selected-book-btn { background-color: var(--grey7) }
 
-body.light .selected-book-start-btn.deactivated { color: var(--grey3) }
-body.night .selected-book-start-btn.deactivated { color: var(--grey6) }
+body.light .selected-book-btn.deactivated { color: var(--grey3) }
+body.night .selected-book-btn.deactivated { color: var(--grey6) }
+
+.selected-book-start-btn {
+    flex-grow: 3;
+}
+
+.selected-book-add-text-btn {
+    flex-grow: 1;
+}
+
+
+
+
+
+/* ADD TEXT HEADER */
+
+.new-book {
+    display: grid;
+    grid-template-columns: 100%;
+    gap: var(--gap-5px);
+
+    font-weight: 700;
+    font-size: 20px;
+}
+.new-book > * {
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+}
+body.light .new-book > * { background-color: var(--grey2) }
+body.night .new-book > * { background-color: var(--grey7) }
+
+.new-book-header,
+.new-book-title-field-div {
+    grid-column: span 2;
+}
+.new-book-title-input {
+    width: -webkit-fill-available;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+
+
+
+
+/* ADD TEXT FIELDS */
+
+.new-texts-fields {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: var(--gap-5px);
+
+    font-weight: 700;
+    font-size: 20px;
+}
+.new-texts-fields > * {
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+}
+body.light .new-texts-fields > * { background-color: var(--grey2) }
+body.night .new-texts-fields > * { background-color: var(--grey7) }
+
+.new-texts-add-text-selected-tab-paste,
+.new-texts-add-text-selected-tab-upload {
+    grid-column: span 2;
+}
+
+body.light .new-texts-add-text-tab.inactive { color: var(--grey4) }
+body.night .new-texts-add-text-tab.inactive { color: var(--grey5) }
+
+.new-texts-add-text-tab {
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.new-texts-text-input {
+    width: -webkit-fill-available;
+    word-wrap: normal;
+}
+
+
+
+
+
+
+
+
+
+/* ADD TEXT BUTTONS */
+
+.new-texts-btns {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    gap: var(--gap-5px);
+
+    font-weight: 700;
+    font-size: 20px;
+}
+.new-texts-btns > * {
+    border-radius: var(--main-border-radius-3px);
+    padding: 5px 5px;
+}
+.new-texts-add-btn,
+.new-texts-cancel-btn {
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+}
+.new-texts-add-btn.deactivated,
+.new-texts-cancel-btn.deactivated {
+    cursor: not-allowed;
+}
+body.light .new-texts-add-btn { background-color: #68c968 }
+body.night .new-texts-add-btn { background-color: #076c07 }
+
+body.light .new-texts-add-btn.deactivated { color: var(--grey3) }
+body.light .new-texts-add-btn.deactivated { background-color: var(--grey2) }
+body.night .new-texts-add-btn.deactivated { color: var(--grey6) }
+body.night .new-texts-add-btn.deactivated { background-color: var(--grey7) }
+
+body.light .new-texts-cancel-btn { background-color: #e77b7b }
+body.night .new-texts-cancel-btn { background-color: #891616 }
+
+body.light .new-texts-cancel-btn.deactivated { color: var(--grey3) }
+body.light .new-texts-cancel-btn.deactivated { background-color: var(--grey2) }
+body.night .new-texts-cancel-btn.deactivated { color: var(--grey6) }
+body.night .new-texts-cancel-btn.deactivated { background-color: var(--grey7) }
+
+
+
+
 
 
 
@@ -822,8 +967,8 @@ body.night .book-content .loading { background-color: var(--grey7) }
 
 
 
-
-.chapter-add-cont {
+/* TODO: delete chapter stuff */
+/* .chapter-add-cont {
     display: flex;
     flex-wrap: wrap;
     gap: var(--gap-5px);
@@ -868,6 +1013,6 @@ body.night .chapter-add-hide { background-color: var(--grey7) }
     grid-column: span 2;
     font-weight: 700;
     font-size: 20px;
-}
+} */
 
 </style>
