@@ -1,4 +1,4 @@
-from schemas import Options, ChapterWithTextCreate, Book, BookTitle, StatsReturn, TextChapter
+from schemas import Options, ChapterWithTextCreate, Book, BookTitle, BookText, StatsReturn, TextChapter
 from fastapi import FastAPI, Path, Query, HTTPException, Depends, status, Request, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
 from secrets import SESSION_SECRET_KEY, SESSION_EXPIRATION_TIME_HOURS
@@ -134,6 +134,19 @@ async def set_options(options: Options, request: Request, db: Session = Depends(
 
 ### BOOKS ROUTES ##############################################################
 
+@app.post('/api/books/{book_id}/', tags=['Books'])
+async def create_a_book(book_id: int, book_text: BookText, request: Request, db: Session = Depends(get_db)):
+    user_id = utils.get_user_id(request, db)
+    list_of_texts = utils.texts_slice(book_text.text)
+    list_of_text_dicts = utils.prep_texts_calc_stats(list_of_texts)
+    res = crud.create_texts(book_id, user_id, list_of_text_dicts, db)
+
+    if res:
+        return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The texts haven't been created for some reason")
+
+
 @app.post('/api/books/', tags=['Books'])
 async def create_a_book(book: Book, request: Request, db: Session = Depends(get_db)):
     user_id = utils.get_user_id(request, db)
@@ -144,17 +157,17 @@ async def create_a_book(book: Book, request: Request, db: Session = Depends(get_
     created_book = crud.create_book(book.title, user_id, db)
 
     if not created_book:
-        raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="The book hasn't been created for some reason")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The book hasn't been created for some reason")
 
     created_book_id = created_book.id
     list_of_texts = utils.texts_slice(book.text)
     list_of_text_dicts = utils.prep_texts_calc_stats(list_of_texts)
-    res = crud.create_texts(created_book_id, list_of_text_dicts, db)
+    res = crud.create_texts(created_book_id, user_id, list_of_text_dicts, db)
 
     if res:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="The texts haven't been created for some reason")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The texts haven't been created for some reason")
 
 
 @app.get('/api/books/', status_code=status.HTTP_200_OK, tags=['Books'])
@@ -194,7 +207,7 @@ async def rename_a_book(book_id: int, book: BookTitle, request: Request, db: Ses
     if res:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="The text hasn't been renamed for some reason")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="The text hasn't been renamed for some reason")
 
 
 @app.delete('/api/books/{book_id}/', tags=['Books'])
@@ -210,7 +223,7 @@ async def delete_a_book_by_id(book_id: int, request: Request, db: Session = Depe
     if res:
         return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-    raise HTTPException(status_code=status.HTTP_417_EXPECTATION_FAILED, detail="Something's went wrong...")
+    raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something's went wrong...")
 
 
 ### TEXTS ROUTES ##############################################################

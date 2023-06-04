@@ -257,7 +257,7 @@ def init_text_stats_prep_for_typing(book_id: str, user_id: int, db: Session):
             sum_time += result_dict['texts'][text_id]['time']
 
     # ...PREPPING UNFINISHED TEXTS...
-    unfinished_texts_list = all_texts[first_untyped_idx:first_untyped_idx+INIT_LOAD_N_NEXT_TEXTS_TO_TYPE]
+    unfinished_texts_list = all_texts[first_untyped_idx:first_untyped_idx+NUM_OF_TEXTS_TO_LOAD]
     unfinished_texts_dict = {text['id']: text for text in unfinished_texts_list}
 
     for text_id in unfinished_texts_dict.keys():

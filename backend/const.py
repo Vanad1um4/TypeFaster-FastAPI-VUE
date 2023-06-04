@@ -1,6 +1,6 @@
 INIT_LOAD_N_PREV_TYPED_TEXTS = 5
 INIT_LOAD_N_NEXT_TEXTS_TO_TYPE = 10
-NUM_OF_TEXTS_TO_LOAD = 10
+NUM_OF_TEXTS_TO_LOAD = 20
 
 default_user_data = {
     'authenticated': False,

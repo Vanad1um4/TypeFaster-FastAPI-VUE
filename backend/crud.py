@@ -152,11 +152,16 @@ def delete_book_by_id(book_id: int, user_id: int, db: Session):
 ### TEXTS CRUDS ###############################################################
 
 
-def create_texts(book_id: int, list_of_text_dicts: list[dict], db: Session):
+def create_texts(book_id: int, user_id: int, list_of_text_dicts: list[dict], db: Session):
     try:
+        book_id_validated = db.query(Book).filter(Book.user_id == user_id).filter(Book.id == book_id).first().id
+
+        if not book_id_validated:
+            return False
+
         for text_dict in list_of_text_dicts:
             db_text = models.Text(
-                book_id=book_id,
+                book_id=book_id_validated,
                 text=text_dict['text'],
                 done=False,
                 chars_n=text_dict['chars_n'],

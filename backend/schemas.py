@@ -16,6 +16,10 @@ class Book(BaseModel):
     text: str
 
 
+class BookText(BaseModel):
+    text: str
+
+
 class BookTitle(BaseModel):
     title: str
 

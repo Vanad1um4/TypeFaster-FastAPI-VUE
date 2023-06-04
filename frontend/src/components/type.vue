@@ -609,7 +609,6 @@ body.night .neutral { color: var(--grey4) }
 
 
 .main-scroll .active {
-    border-radius: 3px;
     position: relative;
 }
 
