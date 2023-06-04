@@ -44,6 +44,8 @@ def texts_slice(text: str) -> list[str]:
         text = text.replace("“", '"')
     while "”" in text:
         text = text.replace("”", '"')
+    while "„" in text:
+        text = text.replace("„", '"')
     while "»" in text:
         text = text.replace("»", '"')
     while "«" in text:
@@ -52,6 +54,8 @@ def texts_slice(text: str) -> list[str]:
         text = text.replace("–", '-')
     while "—" in text:
         text = text.replace("—", '-')
+    while "\xa0" in text:
+        text = text.replace("\xa0", ' ')
 
     texts_list = []
     while text:
