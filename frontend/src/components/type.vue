@@ -35,7 +35,7 @@
         v-if="route.params.book_id"
         class="main-scroll"
     >
-        <div v-for="(text, textId) in texts" v-bind:class="['text' + textId, textId == typeState.currTextId ? 'active' : 'inactive']">
+        <div v-for="(text, textId) in texts" v-bind:class="['text', 'text' + textId, textId == typeState.currTextId ? 'active' : 'inactive']">
 
             <span v-for="char in text.chars" v-bind:class="char.res"> {{ char.ch }} </span>
 
@@ -46,10 +46,10 @@
                 ]"
             >⏎</span>
 
-            <div class="loading-cont" style="display: none">
-                <img v-bind:src="waitImg" class="wait-img" style="display: none" title="Sending statistics back to server...">
-                <img v-bind:src="goodImg" class="good-img" style="display: none" title="Stats have been successfully uploaded to the server.">
-                <img v-bind:src="badImg" class="bad-img" style="display: none" title="Some error has occured...">
+            <div class="loading-cont">
+                <img v-show="text.statsUploadShow.wait" v-bind:src="waitImg" class="wait-img" title="Sending statistics back to server..." >
+                <img v-show="text.statsUploadShow.good" v-bind:src="goodImg" class="good-img" title="Stats have been successfully uploaded to the server." >
+                <img v-show="text.statsUploadShow.bad" v-bind:src="badImg" class="bad-img" title="Some error has occured..." >
             </div>
 
         </div>
@@ -82,28 +82,9 @@ const modalsRef = ref()
 let timeoutID
 
 const keysIgnore = [
-    'ArrowRight',
-    'ArrowDown',
-    'ArrowLeft',
-    'CapsLock',
-    'ArrowUp',
-    'Control',
-    'Escape',
-    'Shift',
-    'Tab',
-    'Alt',
-    'F10',
-    'F11',
-    'F12',
-    'F1',
-    'F2',
-    'F3',
-    'F4',
-    'F5',
-    'F6',
-    'F7',
-    'F8',
-    'F9',
+    'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
+    'CapsLock', 'Control', 'Escape', 'Shift', 'Tab', 'Alt',
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
 ]
 
 let textsStats = reactive({})
@@ -126,6 +107,8 @@ let typeState = reactive({
     theEndStatusMssg: false,
     lastTextId: -1,
     bookTitle: '',
+    currSpanLastCalculatedTop: 0,
+    textsAmtAfterLastShift: 0,
 })
 
 
@@ -203,19 +186,16 @@ function propagateForward(key) {
 
 
 function evaluateWhetherToFetchMoreTexts() {
-    // // When a large text is deleted there's an unpleasant stuttering. 
-    // // TODO: Think of a way to make it go away?
-    // // Maybe do not delete anything? The amount of elements is not that big... 
-    // for (const textId in texts) {
-    //     if (document.querySelector(`.text${textId}`).getBoundingClientRect().bottom < 0) {
-    //         delete texts[textId]
-    //     } else { break }
-    // }
-    const scrollRectHeight = document.querySelector('.main-scroll').getBoundingClientRect().height
-    const activeTextbottom = document.querySelector('.main-scroll .active').getBoundingClientRect().bottom
-    const lastTextBottom = document.querySelector('.main-scroll :last-child *').getBoundingClientRect().bottom
+    for (const textId in texts) {
+        if (document.querySelector(`.text${textId}`).getBoundingClientRect().bottom < 0) {
+            delete texts[textId]
+        } else { break }
+    }
 
-    if (lastTextBottom - activeTextbottom < scrollRectHeight) {
+    const scrollRectBottom = document.querySelector('.main-scroll').getBoundingClientRect().bottom
+    const lastTextTop = document.querySelector('.main-scroll :last-child *').getBoundingClientRect().top
+
+    if (lastTextTop < scrollRectBottom) {
         const currBatchLastTextId = Object.keys(texts)[Object.keys(texts).length - 1]
         
         if (currBatchLastTextId < typeState.lastTextId) {
@@ -225,13 +205,42 @@ function evaluateWhetherToFetchMoreTexts() {
 }
 
 
-function scrollActiveTextToCenter() {
-    const currSpan = document.querySelector(`.text${typeState.currTextId} .current`);
-    const mainScrollDiv = currSpan.parentElement.parentElement;
-    const currSpanRect = currSpan.getBoundingClientRect();
-    const mainScrollRect = mainScrollDiv.getBoundingClientRect();
-    const scrollValue = currSpanRect.top - mainScrollRect.top - (mainScrollRect.height - currSpanRect.height) / 3;
-    mainScrollDiv.scrollBy({ top: scrollValue, behavior: 'smooth' });
+function scrollActiveTextIntoView() {
+    const currSpanRectTop = document.querySelector(`.text${typeState.currTextId} .current`)?.getBoundingClientRect().top
+    if (!currSpanRectTop) { return }
+
+    const textDivs = document.querySelectorAll('.text')
+    if (currSpanRectTop === typeState.currSpanLastCalculatedTop && textDivs.length === typeState.textsAmtAfterLastShift) { return }
+
+    typeState.currSpanLastCalculatedTop = currSpanRectTop
+    typeState.textsAmtAfterLastShift = textDivs.length
+
+    // TODO: move textGap to the options?
+    const textGap = 20
+    const currTextRectTop = document.querySelector(`.text${typeState.currTextId}`).getBoundingClientRect().top
+    const lineShift = currSpanRectTop - currTextRectTop
+    
+    const mainScrollRect = document.querySelector('.main-scroll').getBoundingClientRect()
+    const mainScrollRectHeight = mainScrollRect.bottom - mainScrollRect.top
+    // TODO: move activeLinePositionOnTheScreen to the options?
+    const activeLinePositionOnTheScreen = 33
+    // const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen) - mainScrollRect.top
+    const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen)
+    
+    let heightAccum = 0
+    for (let i = 0; i < textDivs.length; i++) {
+        if (textDivs[i].classList.contains('active')) { break }
+        const textDivHeight = textDivs[i].getBoundingClientRect().bottom - textDivs[i].getBoundingClientRect().top + textGap
+        heightAccum += textDivHeight
+    }
+
+    const startingPositionTop = activeTextTargetPositionTop - heightAccum
+    let nextPositionTop = startingPositionTop - lineShift
+
+    for (let i = 0; i < textDivs.length; i++) {
+        textDivs[i].style.top = `${nextPositionTop}px`
+        nextPositionTop += textDivs[i].getBoundingClientRect().height + textGap
+    }
 }
 
 
@@ -322,7 +331,6 @@ function initPrep(response) {
 
     recalcStats()
     paintProgressBar()
-    // console.log(calculatedStats)
 }
 
 
@@ -337,6 +345,7 @@ function prepTexts(result) {
 
         if (textObj?.text) {
             texts[textId] = {}
+            texts[textId]['statsUploadShow'] = {cont: false, wait: false, good: false, bad: false}
             // texts[textId]['done'] = textObj['done']
             texts[textId]['chars'] = {}
             for (let i = 0; i < textObj['text'].length; i++) {
@@ -372,7 +381,7 @@ function prepStats(response) {
 function initGetTextsFetch(book_id) {
     const requestData = {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
     }
     fetch(`/api/texts/${book_id}/initiate/`, requestData)
         .then( response => {
@@ -391,7 +400,7 @@ function initGetTextsFetch(book_id) {
 function getNextBatchOfTextsFetch(textId) {
     const requestData = {
         method: 'GET',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' }
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
     }
     fetch(`/api/texts/${textId}/advance/`, requestData)
         .then( response => {
@@ -408,21 +417,14 @@ function getNextBatchOfTextsFetch(textId) {
 
 
 function statsSendFetch(textId, errors, time_sum, statsArray) {
-    const sendingStatsResultWait = document.querySelector(`.text${textId} .wait-img`)
-    const sendingStatsResultGood = document.querySelector(`.text${textId} .good-img`)
-    const sendingStatsResultBad = document.querySelector(`.text${textId} .bad-img`)
-    const sendingStatsCont = document.querySelector(`.text${textId} .loading-cont`)
-    
-    sendingStatsResultWait.style.display = 'block'
-    sendingStatsCont.style.display = 'block'
-    
+    texts[textId]['statsUploadShow']['wait'] = true
     const argsObj = {
         errors: errors,
         time: time_sum,
     }
     const requestData = {
         method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({
             args: argsObj,
             stats_list: statsArray
@@ -434,12 +436,12 @@ function statsSendFetch(textId, errors, time_sum, statsArray) {
             if (response.status === 200) {
                 response.json().then( result => {
                     // console.log('/api/stats/${textId}/', result)
-                    sendingStatsResultWait.style.display = 'none'
-                    sendingStatsResultGood.style.display = 'block'
+                    texts[textId]['statsUploadShow']['wait'] = false
+                    texts[textId]['statsUploadShow']['good'] = true
                 })
             } else {
-                sendingStatsResultWait.style.display = 'none'
-                sendingStatsResultBad.style.display = 'block'
+                texts[textId]['statsUploadShow']['wait'] = false
+                texts[textId]['statsUploadShow']['bad'] = true
                 pushNotification('Some error has occured...', 'error')
             }
         })
@@ -464,7 +466,7 @@ function hideWaitStatusMessage() {
 
 
 onUpdated(() => {
-    scrollActiveTextToCenter()
+    scrollActiveTextIntoView()
 });
 
 
@@ -549,25 +551,26 @@ body.night .status-end { color: #5ed55e }
 body.night .status-end { background-color: transparent }
 
 .main-scroll {
-    flex-grow: 1;
-
     font-family: monospace;
     font-weight: bold;
     user-select: none;
     font-size: 200%;
-    padding: 7px 15px;
     cursor: text;
-
-    overflow: auto;
     white-space: pre-wrap;
-
-    display: flex;
-    gap: 14px;
-    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    height: -webkit-fill-available;
 }
 .main-scroll::-webkit-scrollbar {
     display: none;
 }
+
+.text {
+    position: absolute;
+    padding: 0px 15px;
+    width: -webkit-fill-available;
+}
+
 .next-text {
     padding: 0px 8px;
 }
@@ -608,14 +611,11 @@ body.night .neutral { color: var(--grey4) }
 
 
 
-.main-scroll .active {
-    position: relative;
-}
-
 .loading-cont {
     position: absolute;
     bottom: 0;
     right: 0;
+    margin: 0px 10px
 }
 
 .wait-img, .good-img, .bad-img {
