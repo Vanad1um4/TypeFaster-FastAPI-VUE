@@ -64,8 +64,7 @@
                 >
 
                 <div class="width-text" title="You can specify the maximum width of the main window">
-                    <!-- think of a better title phrasing -->
-                    Max width
+                    Max page width (px)
                 </div>
                 
                 <input
@@ -80,11 +79,12 @@
                 <button
                     type="submit"
                     class="width-save"
+                    v-bind:disabled="localOptions.windowWidthInput.disabled"
                     v-on:click="setOptionsFetch"
                 >💾</button>
 
                 <div class="show-stats-bar-text" title="Show statistics bar while typing">
-                    Stats bar
+                    Show stats bar
                 </div>
                 
                 <input
@@ -96,7 +96,7 @@
                 >
 
                 <div class="show-progress-bar-text" title="Show progress bar while typing">
-                    Progress bar
+                    Show progress bar
                 </div>
                 
                 <input
@@ -118,6 +118,46 @@
                     v-bind:disabled="localOptions.showErrorHistory.disabled"
                     v-on:change="setOptionsFetch"
                 >
+
+                <div class="line-height-text" title="You can specify the position of active line on the screen. For example: 0 - in the beginning, 50 - in the middle, 100 - in the end.">
+                    Active line position (%)
+                </div>
+                
+                <input
+                    type="text"
+                    class="line-height-input"
+                    title="1 - 99"
+                    v-model="globalState.options.activeLinePosition.val"
+                    v-bind:disabled="localOptions.activeLinePosition.disabled"
+                    v-on:keydown.enter="setOptionsFetch"
+                >
+                
+                <button
+                    type="submit"
+                    class="line-height-save"
+                    v-bind:disabled="localOptions.activeLinePosition.disabled"
+                    v-on:click="setOptionsFetch"
+                >💾</button>
+
+                <div class="texts-gap-text" title="You can specify the gap between texts in pixels">
+                    Gap between texts (px)
+                </div>
+                
+                <input
+                    type="text"
+                    class="texts-gap-input"
+                    title="0 - 9999"
+                    v-model="globalState.options.gapBetweenTexts.val"
+                    v-bind:disabled="localOptions.gapBetweenTexts.disabled"
+                    v-on:keydown.enter="setOptionsFetch"
+                >
+                
+                <button
+                    type="submit"
+                    class="texts-gap-save"
+                    v-bind:disabled="localOptions.gapBetweenTexts.disabled"
+                    v-on:click="setOptionsFetch"
+                >💾</button>
 
             </div>
 
@@ -197,21 +237,20 @@ const menuButtonsArray = [
 ]
 
 const localOptions = reactive({
-    // site options
     'darkMode': {'disabled': true},
     'windowWidthInput': {'disabled': false},
-    // 'windowWidthBtn': { 'disabled': false }, // TODO
     'showStatsBar': {'disabled': false},
     'showProgressBar': {'disabled': false},
     'showErrorHistory': {'disabled': false},
-    // stats options
-    // TODO
+    'activeLinePosition': {'disabled': false},
+    'gapBetweenTexts': {'disabled': false},
+
     'statsSliceLengthMinutes': {'val': 60},
     'useNLastMinutesForStats': {'val': 5},
 })
 
 
-function reapplyVars() {
+function reapplyClasses() {
     if (globalState.options.darkMode.val === true) {
         mainBody.classList.remove('light')
         mainBody.classList.add('night')
@@ -248,6 +287,9 @@ function blockInputFields() {
     localOptions.showStatsBar.disabled = true
     localOptions.showProgressBar.disabled = true
     localOptions.showErrorHistory.disabled = true
+    localOptions.activeLinePosition.disabled = true
+    localOptions.gapBetweenTexts.disabled = true
+
     localOptions.statsSliceLengthMinutes.disabled = true
     localOptions.useNLastMinutesForStats.disabled = true
 }
@@ -259,6 +301,9 @@ function unblockInputFields() {
     localOptions.showStatsBar.disabled = false
     localOptions.showProgressBar.disabled = false
     localOptions.showErrorHistory.disabled = false
+    localOptions.activeLinePosition.disabled = false
+    localOptions.gapBetweenTexts.disabled = false
+
     localOptions.statsSliceLengthMinutes.disabled = false
     localOptions.useNLastMinutesForStats.disabled = false
 }
@@ -279,6 +324,25 @@ function optionInputsValidate() {
         globalState.options.windowWidthInput.val = windowWidthValue
     }
 
+
+    const activeLinePositionValue = parseInt(globalState.options.activeLinePosition.val)
+    if (activeLinePositionValue < 1 || activeLinePositionValue > 99 || isNaN(activeLinePositionValue)) {
+        pushNotification('Should be an integer number of percent, setting to 50', 'info', 5)
+        globalState.options.activeLinePosition.val = 50
+    } else {
+        globalState.options.activeLinePosition.val = activeLinePositionValue
+    }
+
+    
+    const gapBetweenTextsValue = parseInt(globalState.options.gapBetweenTexts.val)
+    if (gapBetweenTextsValue < 0 || gapBetweenTextsValue > 9999 || isNaN(gapBetweenTextsValue)) {
+        pushNotification('Should be a reasonable positive integer number of pixels between texts, setting to 20', 'info', 5)
+        globalState.options.gapBetweenTexts.val = 20
+    } else {
+        globalState.options.gapBetweenTexts.val = gapBetweenTextsValue
+    }
+
+    
     const statsSliceLengthMinutesValue = parseInt(globalState.options.statsSliceLengthMinutes.val)
     if (statsSliceLengthMinutesValue < 1 || statsSliceLengthMinutesValue > 1_000_000 || isNaN(statsSliceLengthMinutesValue)) {
         pushNotification('Should be a reasonable positive integer number of minutes, setting to 60', 'info', 5)
@@ -286,6 +350,7 @@ function optionInputsValidate() {
     } else {
         globalState.options.statsSliceLengthMinutes.val = statsSliceLengthMinutesValue
     }
+    
     
     const useNLastMinutesForStatsValue = parseInt(globalState.options.useNLastMinutesForStats.val)
     if (useNLastMinutesForStatsValue < 1 || useNLastMinutesForStatsValue > 1_000_000 || isNaN(useNLastMinutesForStatsValue)) {
@@ -299,7 +364,7 @@ function optionInputsValidate() {
 
 function setOptionsFetch() {
     optionInputsValidate()
-    reapplyVars()
+    reapplyClasses()
     const requestData = {
         'method': 'PUT',
         'headers': { 'Accept': 'application/json', 'Content-Type': 'application/json' },
@@ -309,6 +374,9 @@ function setOptionsFetch() {
             'show_stats_bar': globalState.options.showStatsBar.val,
             'show_progress_bar': globalState.options.showProgressBar.val,
             'show_error_history': globalState.options.showErrorHistory.val,
+            'active_line_position': globalState.options.activeLinePosition.val,
+            'gap_between_texts': globalState.options.gapBetweenTexts.val,
+
             'stats_slice_length_minutes': globalState.options.statsSliceLengthMinutes.val,
             'use_n_last_minutes_for_stats': globalState.options.useNLastMinutesForStats.val,
         })
@@ -339,15 +407,19 @@ function getOptionsFetch() {
                     // console.log('get', result)
                     globalState.user.authenticated = result.authenticated
                     globalState.user.email = result.email
+
                     globalState.options.darkMode.val = result.dark_mode
                     globalState.options.windowWidthInput.val = result.window_width
                     globalState.options.showStatsBar.val = result.show_stats_bar
                     globalState.options.showProgressBar.val = result.show_progress_bar
                     globalState.options.showErrorHistory.val = result.show_error_history
+                    globalState.options.activeLinePosition.val = result.active_line_position
+                    globalState.options.gapBetweenTexts.val = result.gap_between_texts
+
                     globalState.options.statsSliceLengthMinutes.val = result.stats_slice_length_minutes
                     globalState.options.useNLastMinutesForStats.val = result.use_n_last_minutes_for_stats
                     unblockInputFields()
-                    reapplyVars()
+                    reapplyClasses()
                 })
             } else {
                 pushNotification('Some error has occured...', 'error', 5)
@@ -379,24 +451,15 @@ onMounted(() => {
     mainBody = document.querySelector('body')
 })
 
-// watch(() => options.darkMode.val, (new_val) => {globalState.options.darkMode = new_val})
 </script>
 
-<!-- <script>
-export default {
-  setup() {
-    return {
-      user
-    }
-  },
-}
-</script> -->
+
 
 
 
 <style>
 :root {
-    --optionsGTC1: 180px;
+    --optionsGTC1: 240px;
     --optionsGTC2: 53px;
     --optionsGTC3: 28px;
     --optionsGapH: 7px;
@@ -613,6 +676,22 @@ body.night .auth-btn:hover>div { color: var(--grey2); }
 }
 .options-drop-down .show-error-history-checkbox {
     transform: scale(1.2);
+}
+
+.options-drop-down .line-height-input {
+    font-size: 17px;
+}
+.options-drop-down .line-height-save {
+    font-size: 17px;
+    padding: 0px 0px;
+}
+
+.options-drop-down .texts-gap-input {
+    font-size: 17px;
+}
+.options-drop-down .texts-gap-save {
+    font-size: 17px;
+    padding: 0px 0px;
 }
 
 

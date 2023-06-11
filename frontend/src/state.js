@@ -12,6 +12,8 @@ export const globalState = reactive({
         'showStatsBar': {'val': true},
         'showProgressBar': {'val': true},
         'showErrorHistory': {'val': true},
+        'activeLinePosition': {'val': 33},
+        'gapBetweenTexts': {'val': 20},
 
         'statsSliceLengthMinutes': {'val': 60},
         'useNLastMinutesForStats': {'val': 5},
