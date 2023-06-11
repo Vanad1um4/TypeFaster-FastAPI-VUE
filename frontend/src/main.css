@@ -40,7 +40,7 @@ body.night { background-color: var(--black); }
 
     display: flex;
     flex-direction: column;
-    min-width: 800px;
+    min-width: var(--main-width);
     width: var(--main-width);
     margin: 0px var(--gap-8px);
 }
