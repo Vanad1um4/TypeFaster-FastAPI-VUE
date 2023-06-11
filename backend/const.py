@@ -9,6 +9,9 @@ default_user_data = {
     'show_stats_bar': False,
     'show_progressbar': False,
     'show_error_message': False,
+    'active_line_position': 33,
+    'gap_between_texts': 20,
+
     'stats_slice_length_minutes': 60,
     'use_n_last_minutes_for_stats': 60,
 }

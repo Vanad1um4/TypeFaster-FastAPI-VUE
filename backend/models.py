@@ -21,11 +21,15 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, unique=True)
     is_admin = Column(Boolean, default=False)
+
     dark_mode = Column(Boolean, default=True)
     window_width = Column(Integer, default=1000)
     show_stats_bar = Column(Boolean, default=True)
     show_progress_bar = Column(Boolean, default=True)
     show_error_history = Column(Boolean, default=True)
+    active_line_position = Column(Integer, default=33)
+    gap_between_texts = Column(Integer, default=20)
+
     stats_slice_length_minutes = Column(Integer, default=60)
     use_n_last_minutes_for_stats = Column(Integer, default=60)
 
