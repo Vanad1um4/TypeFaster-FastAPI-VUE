@@ -7,6 +7,9 @@ class Options(BaseModel):
     show_stats_bar: bool
     show_progress_bar: bool
     show_error_history: bool
+    active_line_position: int
+    gap_between_texts: int
+
     stats_slice_length_minutes: int
     use_n_last_minutes_for_stats: int
 

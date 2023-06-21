@@ -246,12 +246,12 @@ async def get_texts_to_continue_typing(text_id: int, request: Request, db: Sessi
 
 ### RETURN STATS ##############################################################
 
-@app.post('/api/stats/{text_id}/', status_code=status.HTTP_200_OK, tags=['Stats'])
+@app.post('/api/stats/{text_id}/', tags=['Stats'])
 async def return_stats(text_id: int, stats: StatsReturn, request: Request, db: Session = Depends(get_db)):
     user_id = utils.get_user_id(request, db)
     res = crud.save_stats(text_id, stats.dict()['args']['errors'], stats.dict()['args']['time'], stats.dict()['stats_list'], user_id, db)
 
-    if res is True:
+    if res:
         return JSONResponse(status_code=status.HTTP_200_OK, content={'detail': 'Stats were saved successfully'})
 
     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Something's went wrong...")

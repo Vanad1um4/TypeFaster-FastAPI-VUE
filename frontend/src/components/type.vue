@@ -215,16 +215,13 @@ function scrollActiveTextIntoView() {
     typeState.currSpanLastCalculatedTop = currSpanRectTop
     typeState.textsAmtAfterLastShift = textDivs.length
 
-    // TODO: move textGap to the options?
-    const textGap = 20
+    const textGap = globalState.options.gapBetweenTexts.val
     const currTextRectTop = document.querySelector(`.text${typeState.currTextId}`).getBoundingClientRect().top
     const lineShift = currSpanRectTop - currTextRectTop
 
     const mainScrollRect = document.querySelector('.main-scroll').getBoundingClientRect()
     const mainScrollRectHeight = mainScrollRect.bottom - mainScrollRect.top
-    // TODO: move activeLinePositionOnTheScreen to the options?
-    const activeLinePositionOnTheScreen = 33
-    // const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen) - mainScrollRect.top
+    const activeLinePositionOnTheScreen = globalState.options.activeLinePosition.val
     const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen)
 
     let heightAccum = 0

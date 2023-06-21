@@ -62,13 +62,18 @@ def create_user(user_email: str, db: Session):
 def set_user_options(options: Options, user_id: int, db: Session):
     try:
         db_user = db.query(User).filter(User.id == user_id).first()
+
         db_user.dark_mode = options.dark_mode
         db_user.window_width = options.window_width
         db_user.show_stats_bar = options.show_stats_bar
         db_user.show_progress_bar = options.show_progress_bar
         db_user.show_error_history = options.show_error_history
+        db_user.active_line_position = options.active_line_position
+        db_user.gap_between_texts = options.gap_between_texts
+
         db_user.stats_slice_length_minutes = options.stats_slice_length_minutes
         db_user.use_n_last_minutes_for_stats = options.use_n_last_minutes_for_stats
+
         db.add(db_user)
         db.commit()
 
