@@ -114,7 +114,7 @@ let typeState = reactive({
 
 function keyPressEval(event) {
     if (keysIgnore.includes(event.key)) { return }
-    
+
     if (typeState.globalEnd === false) {
         if (event.key === 'Backspace') { propagateBackward() }
         else {
@@ -193,11 +193,11 @@ function evaluateWhetherToFetchMoreTexts() {
     }
 
     const scrollRectBottom = document.querySelector('.main-scroll').getBoundingClientRect().bottom
-    const lastTextTop = document.querySelector('.main-scroll :last-child *').getBoundingClientRect().top
+    const lastTextTop = document.querySelector('.main-scroll > div:last-child').getBoundingClientRect().top
 
     if (lastTextTop < scrollRectBottom) {
         const currBatchLastTextId = Object.keys(texts)[Object.keys(texts).length - 1]
-        
+
         if (currBatchLastTextId < typeState.lastTextId) {
             getNextBatchOfTextsFetch(currBatchLastTextId)
         }
@@ -219,14 +219,14 @@ function scrollActiveTextIntoView() {
     const textGap = 20
     const currTextRectTop = document.querySelector(`.text${typeState.currTextId}`).getBoundingClientRect().top
     const lineShift = currSpanRectTop - currTextRectTop
-    
+
     const mainScrollRect = document.querySelector('.main-scroll').getBoundingClientRect()
     const mainScrollRectHeight = mainScrollRect.bottom - mainScrollRect.top
     // TODO: move activeLinePositionOnTheScreen to the options?
     const activeLinePositionOnTheScreen = 33
     // const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen) - mainScrollRect.top
     const activeTextTargetPositionTop = Math.round(mainScrollRectHeight / 100 * activeLinePositionOnTheScreen)
-    
+
     let heightAccum = 0
     for (let i = 0; i < textDivs.length; i++) {
         if (textDivs[i].classList.contains('active')) { break }
@@ -248,7 +248,7 @@ function scrollActiveTextIntoView() {
 
 function recalcStats(textId = null) {
     if (textId) { textsStats[textId]['done'] = true }
-    
+
     const timeThreshold = globalState.options.useNLastMinutesForStats.val * 60 * 1000
     let charsSum = 0
     let wordsSum = 0
@@ -272,7 +272,7 @@ function recalcStats(textId = null) {
     if (calculatedStats.charsDoneSum > 0) { calculatedStats.cpm = Math.round((charsSum / timeSum) * 60 * 1000) } else { calculatedStats.cpm = 0 }
     if (calculatedStats.charsDoneSum > 0) { calculatedStats.wpm = Math.round((wordsSum / timeSum) * 60 * 1000) } else { calculatedStats.wpm = 0 }
     if (calculatedStats.charsDoneSum > 0) { calculatedStats.acc = Math.round((1.0 - (errorsSum / charsSum)) * 100) } else { calculatedStats.acc = 0 }
-    
+
     calculatedStats.fractionOfBookDone = Math.round((calculatedStats.charsDoneSum / calculatedStats.charsSum) * 10000) / 100
 }
 
@@ -296,7 +296,7 @@ function prepStatsForSending(textId) {
         prev_time = charObj.time
         errors += charObj.err
     }
-    
+
     textsStats[textId]['errors'] = errors
     textsStats[textId]['time'] = time_sum
 
@@ -322,10 +322,10 @@ function initPrep(response) {
     prepTexts(response)
     // console.log('textsStats:', textsStats)
     // console.log('texts:', texts)
-    
+
     prepTypeState()
     // console.log('typeState:', typeState)
-    
+
     prepStats(response)
     // console.log('calculatedStats:', calculatedStats)
 
