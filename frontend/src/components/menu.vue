@@ -9,10 +9,8 @@
     <div class="menu-button options-drop-down">
         <a class="a-btn"> {{ globalState.user.authenticated ? 'Profile' : 'Login' }} </a>
         <div class="options-content-hide">
-            <!-- <div class="options-content-grid"> -->
 
             <div class="options-content-auth-cont">
-                <!-- <div class="profile-header"> Profile </div> -->
                 <div
                     v-if="globalState.user.authenticated === false"
                     class="auth-btn auth-login-btn"
@@ -46,15 +44,15 @@
                 v-if="globalState.user.authenticated === true"
                 class="options-content-vis-settings-cont options-dd-content-grid"
             >
-            
+
                 <div class="site-options-header">
                     Visual settings
                 </div>
-                
+
                 <div class="dark-mode-text">
                     Dark theme
                 </div>
-                
+
                 <input
                     type="checkbox"
                     class="dark-mode-checkbox"
@@ -66,7 +64,7 @@
                 <div class="width-text" title="You can specify the maximum width of the main window">
                     Max page width (px)
                 </div>
-                
+
                 <input
                     type="text"
                     class="width-input"
@@ -75,7 +73,7 @@
                     v-bind:disabled="localOptions.windowWidthInput.disabled"
                     v-on:keydown.enter="setOptionsFetch"
                 >
-                
+
                 <button
                     type="submit"
                     class="width-save"
@@ -86,7 +84,7 @@
                 <div class="show-stats-bar-text" title="Show statistics bar while typing">
                     Show stats bar
                 </div>
-                
+
                 <input
                     type="checkbox"
                     class="show-stats-bar-checkbox"
@@ -98,7 +96,7 @@
                 <div class="show-progress-bar-text" title="Show progress bar while typing">
                     Show progress bar
                 </div>
-                
+
                 <input
                     type="checkbox"
                     class="show-progress-bar-checkbox"
@@ -110,7 +108,7 @@
                 <div class="show-error-history-text" title="Show errors on finished texts while typing">
                     Show past errors
                 </div>
-                
+
                 <input
                     type="checkbox"
                     class="show-error-history-checkbox"
@@ -122,7 +120,7 @@
                 <div class="line-height-text" title="You can specify the position of active line on the screen. For example: 0 - in the beginning, 50 - in the middle, 100 - in the end.">
                     Active line position (%)
                 </div>
-                
+
                 <input
                     type="text"
                     class="line-height-input"
@@ -131,7 +129,7 @@
                     v-bind:disabled="localOptions.activeLinePosition.disabled"
                     v-on:keydown.enter="setOptionsFetch"
                 >
-                
+
                 <button
                     type="submit"
                     class="line-height-save"
@@ -142,7 +140,7 @@
                 <div class="texts-gap-text" title="You can specify the gap between texts in pixels">
                     Gap between texts (px)
                 </div>
-                
+
                 <input
                     type="text"
                     class="texts-gap-input"
@@ -151,7 +149,7 @@
                     v-bind:disabled="localOptions.gapBetweenTexts.disabled"
                     v-on:keydown.enter="setOptionsFetch"
                 >
-                
+
                 <button
                     type="submit"
                     class="texts-gap-save"
@@ -165,15 +163,15 @@
                 v-if="globalState.user.authenticated === true"
                 class="options-content-stats-settings-cont options-dd-content-grid"
             >
-            
+
                 <div class="stats-options-header">
                     Stats calc settings
                 </div>
-                
+
                 <div class="stats-slice-len-text">
                     Stats slice length
                 </div>
-                
+
                 <input
                     type="text"
                     class="stats-slice-len-input"
@@ -192,7 +190,7 @@
                 <div class="stats-use-n-slices-text">
                     Use stats slices
                 </div>
-                
+
                 <input
                     type="text"
                     class="stats-use-n-slices-input"
@@ -201,7 +199,7 @@
                     v-bind:disabled="localOptions.useNLastMinutesForStats.disabled"
                     v-on:keydown.enter="setOptionsFetch"
                 >
-                    
+
                 <button
                     type="submit"
                     class="stats-use-n-slices-save"
@@ -333,7 +331,7 @@ function optionInputsValidate() {
         globalState.options.activeLinePosition.val = activeLinePositionValue
     }
 
-    
+
     const gapBetweenTextsValue = parseInt(globalState.options.gapBetweenTexts.val)
     if (gapBetweenTextsValue < 0 || gapBetweenTextsValue > 9999 || isNaN(gapBetweenTextsValue)) {
         pushNotification('Should be a reasonable positive integer number of pixels between texts, setting to 20', 'info', 5)
@@ -342,7 +340,7 @@ function optionInputsValidate() {
         globalState.options.gapBetweenTexts.val = gapBetweenTextsValue
     }
 
-    
+
     const statsSliceLengthMinutesValue = parseInt(globalState.options.statsSliceLengthMinutes.val)
     if (statsSliceLengthMinutesValue < 1 || statsSliceLengthMinutesValue > 1_000_000 || isNaN(statsSliceLengthMinutesValue)) {
         pushNotification('Should be a reasonable positive integer number of minutes, setting to 60', 'info', 5)
@@ -350,8 +348,8 @@ function optionInputsValidate() {
     } else {
         globalState.options.statsSliceLengthMinutes.val = statsSliceLengthMinutesValue
     }
-    
-    
+
+
     const useNLastMinutesForStatsValue = parseInt(globalState.options.useNLastMinutesForStats.val)
     if (useNLastMinutesForStatsValue < 1 || useNLastMinutesForStatsValue > 1_000_000 || isNaN(useNLastMinutesForStatsValue)) {
         pushNotification('Should be a reasonable positive integer number of minutes, setting to 60', 'info', 5)
@@ -573,11 +571,6 @@ body.night .options-content-hide {
     width: calc(var(--optionsGTC1) + var(--optionsGapV) + var(--optionsGTC2) + var(--optionsGapV) + var(--optionsGTC3))
 }
 
-/* .profile-header {
-    text-align: center;
-    font-weight: bold;
-    font-size: 23px;
-} */
 .auth-header {
     text-align: center;
     font-weight: bold;

@@ -32,10 +32,6 @@ body.night { background-color: var(--black); }
 .wrapper {
     display: grid;
     gap: var(--gap-8px);
-    /* grid-template-columns: calc(var(--main-width) + var(--padding)*4 + var(--gap-8px)*2); */
-    /* grid-template-columns: var(--main-width); */
-    /* grid-template-rows: min-content 92vh; */
-    /* justify-content: center; */
     height: 100%;
 
     display: flex;
@@ -48,7 +44,6 @@ body.night { background-color: var(--black); }
 .outer-box {
     border-radius: 3px;
     padding: var(--padding);
-    /* height: max-content; */
 }
 
 .outer-box.header {

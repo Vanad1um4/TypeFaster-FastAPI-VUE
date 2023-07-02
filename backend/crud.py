@@ -1,9 +1,10 @@
-from models import User, Book, Text
-from sqlalchemy.orm import Session
-from sqlalchemy import func, select
-from schemas import Options
-import models
 import json
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from schemas import Options
+from models import User, Book, Text
 
 
 def dictify_object(db_obj):
@@ -165,7 +166,7 @@ def create_texts(book_id: int, user_id: int, list_of_text_dicts: list[dict], db:
             return False
 
         for text_dict in list_of_text_dicts:
-            db_text = models.Text(
+            db_text = Text(
                 book_id=book_id_validated,
                 text=text_dict['text'],
                 done=False,

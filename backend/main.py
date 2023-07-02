@@ -1,25 +1,24 @@
-from schemas import Options, ChapterWithTextCreate, Book, BookTitle, BookText, StatsReturn, TextChapter
-from fastapi import FastAPI, Path, Query, HTTPException, Depends, status, Request, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, FileResponse
-from secrets import SESSION_SECRET_KEY, SESSION_EXPIRATION_TIME_HOURS
-from authlib.integrations.starlette_client import OAuth, OAuthError
-# from secrets import GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET
-from starlette.middleware.sessions import SessionMiddleware
-from secrets import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
-from models import Base, engine, SessionLocal
-from fastapi.staticfiles import StaticFiles
-from secrets import APP_IP, APP_PORT
-from const import default_user_data
-from starlette.config import Config
-from sqlalchemy.orm import Session
-from pathlib import Path
-from typing import Any
 import uvicorn
-import utils
 import httpx
+
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Response
+from fastapi.responses import RedirectResponse, JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from starlette.middleware.sessions import SessionMiddleware
+from sqlalchemy.orm import Session
+
 import crud
-import json
-import os
+import utils
+
+from secrets import APP_IP, APP_PORT
+from secrets import GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET
+from secrets import SESSION_SECRET_KEY, SESSION_EXPIRATION_TIME_HOURS
+
+from schemas import Options, Book, BookTitle, BookText, StatsReturn
+from models import Base, engine, SessionLocal
+from const import default_user_data
+
 
 Base.metadata.create_all(bind=engine)
 
@@ -38,40 +37,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
-
-### GOOGLE AUTH ROUTES ########################################################
-# TODO: To be returned upon domain purcahse...
-
-# config_data = {'GOOGLE_CLIENT_ID': GOOGLE_CLIENT_ID, 'GOOGLE_CLIENT_SECRET': GOOGLE_CLIENT_SECRET}
-# oauth_config = Config(environ=config_data)
-# oauth = OAuth(oauth_config)
-# oauth.register(
-#     name='google',
-#     server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-#     client_kwargs={
-#         'scope': 'openid email profile',
-#         'prompt': 'select_account',  # force to select account
-#     }
-# )
-
-
-# @app.route('/login')
-# async def login(request: Request):
-#     redirect_uri = request.url_for('auth')
-#     return await oauth.google.authorize_redirect(request, redirect_uri)
-
-
-# @app.route('/auth')
-# async def auth(request: Request):
-#     try:
-#         access_token = await oauth.google.authorize_access_token(request)
-#         # print(f'{access_token = }')
-#     except OAuthError:
-#         return RedirectResponse(url='/')
-#     user_data = access_token['userinfo']
-#     request.session['user'] = user_data
-#     return RedirectResponse(url='/')
 
 
 ### GITHUB AUTH ROUTES ########################################################
