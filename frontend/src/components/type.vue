@@ -4,7 +4,7 @@
         v-if="route.params.book_id"
         class="information"
     >
-        <div class="chapter-name">{{ typeState.bookTitle }}</div>
+        <div class="book-title">{{ typeState.bookTitle }}</div>
         <div class="filler"></div>
         <div class="stats">
             CPM:&nbsp;{{ calculatedStats.cpm ? calculatedStats.cpm : '---' }} <span>&nbsp;&nbsp;</span>
