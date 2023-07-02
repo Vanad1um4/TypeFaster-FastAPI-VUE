@@ -7,12 +7,14 @@
                 v-for="book in books"
                 v-bind:id="book.id"
                 class="book-cont hoverable"
+                v-bind:class="divState.selectedBook.id === book.id ? 'selected' : '' "
                 v-on:click="bookClicked"
             >
                 <div class="book-name">{{ book.title }}</div>
             </div>
             <div
                 class="book-cont book-cont-add hoverable"
+                v-bind:class="divState.selectedBook.id === 0 ? 'selected' : '' "
                 v-on:click="addBookClicked"
             >
                 <div class="book-plus"> + Add new book... </div>
@@ -243,11 +245,11 @@ import { Line } from 'vue-chartjs'
 
 const modalsRef = ref()
 const renameBookInput = ref()
-const books = reactive([])
+const books = reactive({})
 
 const divState = reactive({
     selectedBook: {
-        id: 0,
+        id: -1,
         visible: false,
         bookName: '',
         renameVisible: false,
@@ -329,25 +331,27 @@ ChartJS.register(
 
 
 function bookClicked(event) {
-    divState.selectedBook.renameVisible = false
-    divState.newTitle.visibleCont = false
-    divState.newTexts.visibleCont = false
-    divState.addTextButtons.visibleCont = false
-
-    const bookId = event.target.id
-    const bookName = event.target.childNodes[0].textContent
-    divState.selectedBook.id = bookId
-    divState.selectedBook.bookName = bookName
-    getTheBooksStatsFetch(bookId)
+    const bookId = parseInt(event.target.id)
+    if (bookId !== divState.selectedBook.id) {
+        divState.selectedBook.renameVisible = false
+        divState.newTitle.visibleCont = false
+        divState.newTexts.visibleCont = false
+        divState.addTextButtons.visibleCont = false
+        divState.selectedBook.id = bookId
+        divState.selectedBook.bookName = books[bookId]['title']
+        getTheBooksStatsFetch(bookId)
+    }
 }
 
 
 function addBookClicked() {
-    divState.newTitle.visibleCont = true
-    divState.newTexts.visibleCont = true
-    divState.addTextButtons.visibleCont = true
-    divState.selectedBook.visible = false
-    divState.selectedBook.id = 0
+    if (divState.selectedBook.id !== 0) {
+        divState.newTitle.visibleCont = true
+        divState.newTexts.visibleCont = true
+        divState.addTextButtons.visibleCont = true
+        divState.selectedBook.visible = false
+        divState.selectedBook.id = 0
+    }
 }
 
 
@@ -566,7 +570,7 @@ function getBooksFetch() {
     divState.newTexts.visibleCont = false
     divState.selectedBook.visible = false
     divState.addTextButtons.visibleCont = false
-    books.length = 0
+    for(bookId in books) delete books[bookId]
     const requestData = {
         method: 'GET',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
@@ -577,7 +581,7 @@ function getBooksFetch() {
                 response.json().then( result => {
                     // console.log(result)
                     for (const book of result) {
-                        books.push(book)
+                        books[book.id] = book
                     }
                 })
             }
@@ -669,15 +673,25 @@ h2 {
     position: relative;
     bottom: 0px;
     transition: 0.1s;
+    user-select: none;
 
     display: flex;
     align-items: center;
+}
+.main-container > .book-list > .book-cont.selected {
+    left: 5px;
 }
 body.light .main-container > .book-list > .book-cont { background-color: var(--grey2) }
 body.night .main-container > .book-list > .book-cont { background-color: var(--grey7) }
 
 body.light .main-container > .book-list > .book-cont { color: var(--grey7); }
 body.night .main-container > .book-list > .book-cont { color: var(--grey2); }
+
+body.light .main-container > .book-list > .book-cont.selected { background-color: var(--grey7) }
+body.night .main-container > .book-list > .book-cont.selected { background-color: var(--grey3) }
+
+body.light .main-container > .book-list > .book-cont.selected { color: var(--grey1); }
+body.night .main-container > .book-list > .book-cont.selected { color: var(--grey9); }
 
 .main-container > .book-list > .book-cont > .book-name, .book-plus {
     font-weight: 700;
@@ -696,15 +710,15 @@ body.night .main-container > .book-list > .book-cont { color: var(--grey2); }
     font-size: 20px;
 }
 
-.main-container > .book-list > .hoverable:hover {
+.main-container > .book-list > .hoverable:hover:not(.selected) {
     cursor: pointer;
     left: 5px;
 }
-body.light .main-container > .book-list > .hoverable:hover {
+body.light .main-container > .book-list > .hoverable:hover:not(.selected) {
     color: var(--grey8);
     background-color: var(--grey3);
 }
-body.night .main-container > .book-list > .hoverable:hover {
+body.night .main-container > .book-list > .hoverable:hover:not(.selected) {
     color: var(--white);
     background-color: var(--grey6);
 }

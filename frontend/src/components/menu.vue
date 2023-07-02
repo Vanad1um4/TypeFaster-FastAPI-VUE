@@ -488,6 +488,7 @@ onMounted(() => {
     position: relative;
     bottom: 0px;
     transition: 0.1s;
+    user-select: none;
 }
 
 body.light .menu-button { background-color: var(--grey2) }
@@ -505,6 +506,7 @@ body.night .menu-button>.a-btn { color: var(--grey3) }
     cursor: pointer;
     bottom: 3px;
 }
+.menu-button.primary-url { bottom: 3px; }
 
 body.light .menu-button:hover { background-color: var(--grey3); }
 body.light .menu-button:hover>.a-btn { color: var(--grey8); }
