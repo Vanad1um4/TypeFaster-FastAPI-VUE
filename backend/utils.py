@@ -1,8 +1,8 @@
-from const import INIT_LOAD_N_PREV_TYPED_TEXTS, INIT_LOAD_N_NEXT_TEXTS_TO_TYPE, NUM_OF_TEXTS_TO_LOAD
-from fastapi import Request, Response
+from fastapi import Request
 from sqlalchemy.orm import Session
+
 import crud
-import json
+from const import INIT_LOAD_N_PREV_TYPED_TEXTS, INIT_LOAD_N_NEXT_TEXTS_TO_TYPE, NUM_OF_TEXTS_TO_LOAD
 
 
 ### COOKIE FNS ################################################################
@@ -165,7 +165,7 @@ def text_stats_prep_for_library(book_id: int, user_id: int, db: Session):
         num_of_last_texts_to_calc_stats += 1
 
     last_cpms = result_dict_of_stats['chart_stats']['cpm'][-num_of_last_texts_to_calc_stats:]
-    average_cpm = sum(last_cpms) / len(last_cpms)
+    average_cpm = sum(last_cpms) / len(last_cpms) if len(last_cpms) > 0 else 1
     estimated_n_chunks_remains = round(num_of_not_typed_chars / (average_cpm * users_options['stats_slice_length_minutes']))
 
     last_label = result_dict_of_stats['chart_stats']['labels'][-1]

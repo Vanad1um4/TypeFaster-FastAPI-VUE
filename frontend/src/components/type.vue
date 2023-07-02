@@ -344,7 +344,6 @@ function prepTexts(result) {
         if (textObj?.text) {
             texts[textId] = {}
             texts[textId]['statsUploadShow'] = {cont: false, wait: false, good: false, bad: false}
-            // texts[textId]['done'] = textObj['done']
             texts[textId]['chars'] = {}
             for (let i = 0; i < textObj['text'].length; i++) {
                 texts[textId]['chars'][i] = {}

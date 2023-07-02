@@ -27,7 +27,7 @@
 
 
 <script setup>
-import { toRef, ref, reactive } from 'vue';
+import { reactive } from 'vue';
 
 const modalsState = reactive({
     modalQuestion: {
@@ -70,12 +70,10 @@ function addNotification(notiffText, notiffClass='info', timerSec=5) {
     } else {
         modalsState.notification.list[nextIdx]['class'] = 'info'
     }
-    // console.log(modalsState.notification.list)
     setTimeout(function () {removeOldNotifications(nextIdx)}, timerSec*1000)
 
     function removeOldNotifications(idx) {
         delete modalsState.notification.list[idx]
-        // console.log(modalsState.notification.list)
     }
 }
 
@@ -89,16 +87,12 @@ defineExpose({ showModalQuestion, addNotification })
 <style scoped>
 .main-modal-bg {
     user-select: none;
-    /* display: none; */
     position: fixed;
     z-index: 1;
-    /* padding-top: 0px; */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    /* overflow: auto; */
-    /* background-color: rgb(0,0,0); */
     background-color: rgb(0 0 0 / 60%);
 }
 .modal-window {
@@ -108,23 +102,13 @@ defineExpose({ showModalQuestion, addNotification })
     align-items: center;
     font-size: 150%;
     font-weight: bold;
-    /* background-color: white; */
     color: black;
     margin: 40vh auto 0;
     padding: 0;
-    /* width: min-content; */
     width: 500px;
-    /* height: 100%; */
     animation-name: animateappear;
-    /* animation-duration: 0.2s; */
-    /* white-space: nowrap; */
-    /* margin-top: 38%; */
     text-align: center;
 }
-/* @keyframes animateappear {
-    from {opacity:0}
-    to {opacity:1}
-} */
 .modal-window > div {
     border-radius: 5px;
     padding: 9px;
@@ -132,13 +116,10 @@ defineExpose({ showModalQuestion, addNotification })
 }
 .modal-window-message {
     flex: 0 1 100%;
-    /* background-color: white; */
 }
 .modal-window-yes {
-    /* background-color: rgb(115, 214, 115); */
 }
 .modal-window-no {
-    /* background-color: #ff7575; */
 }
 .modal-window-yes, .modal-window-no {
     flex-grow: 1;
@@ -181,8 +162,6 @@ body.night .modal-window-no { background-color: #952626 }
 }
 
 .single-popup {
-    /* align-self: flex-end; */
-
     border: solid rgb(169 169 169) 1px;
     border-radius: 5px;
     padding: 9px;
@@ -192,20 +171,6 @@ body.night .modal-window-no { background-color: #952626 }
     text-align: justify;
     width: fit-content;
 }
-/* .error{
-    background-color: red;
-    color: white;
-}
-.warning{
-    background-color: orange;
-}
-.good{
-    background-color: green;
-    color: white;
-}
-.info{
-    background-color: white;
-} */
 
 body.light .info { color: black }
 body.light .info { background-color: #ededed }

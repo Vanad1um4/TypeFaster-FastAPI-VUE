@@ -1,6 +1,6 @@
 <template>
     <div v-show="globalState.user.authenticated" class="main-container">
-        
+
         <!-- BOOKS LIST -->
         <div class="book-list">
             <div
@@ -22,11 +22,10 @@
         </div>
 
         <div class="book-content">
-            
-            
+
+
             <!-- SELECTED BOOK DISPLAY -->
             <div v-show="divState.selectedBook.visible" class="selected-book">
-
                 <div class="selected-book-header">
                     <div
                         v-show="!divState.selectedBook.renameVisible"
@@ -138,11 +137,9 @@
 
             </div>
 
-            
 
             <!-- HEADER OF A NEW BOOK SECTION -->
             <div v-show="divState.newTitle.visibleCont" class="new-book">
-                
                 <div class="new-book-header">
                     Add new book to your library
                 </div>
@@ -155,14 +152,11 @@
                         placeholder="Enter title of the book here"
                     >
                 </div>
-                
             </div>
-            
-            
+
 
             <!-- ADD TEXTS FIELDS -->
             <div v-show="divState.newTexts.visibleCont" class="new-texts-fields">
-
                 <div
                     v-for="tab in divState.newTexts.tabs"
                     v-bind:class="tab.active ? 'active' : 'inactive'"
@@ -171,7 +165,7 @@
                 >
                     {{ tab.text }}
                 </div>
-                
+
                 <div
                     v-show="divState.newTexts.tabs.paste.active"
                     class="new-texts-add-text-selected-tab-paste"
@@ -189,31 +183,28 @@
                     class="new-texts-add-text-selected-tab-upload"
                 >
                     <!-- TODO: implement sometime later... -->
-                    Coming soon... 
+                    Coming soon...
                 </div>
-                
-            </div>
 
+            </div>
 
 
             <!-- ADD TEXTS BUTTONS -->
             <div v-show="divState.addTextButtons.visibleCont" class="new-texts-btns">
-                <div 
+                <div
                     v-bind:class="['new-texts-add-btn', divState.addTextButtons.ready == false ? 'deactivated' : '']"
                     v-on:click="clickedAddTexts()"
                 >
                     Add
                 </div>
 
-                <div 
+                <div
                     v-bind:class="['new-texts-cancel-btn', divState.addTextButtons.ready == false ? 'deactivated' : '']"
                     v-on:click="clickedCancelCreateBook()"
                 >
                     Cancel
                 </div>
-
             </div>
-
 
 
             <!-- LOADING INDICATOR -->
@@ -257,9 +248,9 @@ const divState = reactive({
         chart: {
             data: {labels: [], cpm: [], wpm: [], acc: []},
             colors: {
-                cpm: globalState.options.darkMode.val === false ? importedChartColors.light.cpm : importedChartColors.night.cpm, 
-                wpm: globalState.options.darkMode.val === false ? importedChartColors.light.wpm : importedChartColors.night.wpm, 
-                acc: globalState.options.darkMode.val === false ? importedChartColors.light.acc : importedChartColors.night.acc, 
+                cpm: globalState.options.darkMode.val === false ? importedChartColors.light.cpm : importedChartColors.night.cpm,
+                wpm: globalState.options.darkMode.val === false ? importedChartColors.light.wpm : importedChartColors.night.wpm,
+                acc: globalState.options.darkMode.val === false ? importedChartColors.light.acc : importedChartColors.night.acc,
             },
         },
         timePassed: {h: 0, m: 0},
@@ -570,7 +561,8 @@ function getBooksFetch() {
     divState.newTexts.visibleCont = false
     divState.selectedBook.visible = false
     divState.addTextButtons.visibleCont = false
-    for(bookId in books) delete books[bookId]
+    divState.selectedBook.id = -1
+
     const requestData = {
         method: 'GET',
         headers: { Accept: 'application/json', 'Content-Type': 'application/json' }
@@ -618,6 +610,7 @@ function deleteBookFetch(bookId) {
     fetch(`/api/books/${bookId}/`, requestData)
         .then( response => {
             if (response.status === 204) {
+                delete books[bookId]
                 getBooksFetch()
                 pushNotification('Book deleted successfully', 'good')
             } else {
@@ -978,55 +971,5 @@ body.night .new-texts-cancel-btn.deactivated { background-color: var(--grey7) }
 body.light .book-content .loading { background-color: var(--grey2) }
 body.night .book-content .loading { background-color: var(--grey7) }
 
-
-
-
-/* TODO: delete chapter stuff */
-/* .chapter-add-cont {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--gap-5px);
-    user-select: none;
-}
-
-.chapter-add-btn {
-    flex-basis: 45%;
-    flex-grow: 1;
-    border-radius: var(--main-border-radius-3px);
-    padding: 5px 5px;
-    cursor: pointer;
-}
-
-body.light .chapter-add-btn { background-color: var(--grey2) }
-body.night .chapter-add-btn { background-color: var(--grey7) }
-
-.chapter-add-hide {
-    flex-grow: 1;
-    border-radius: var(--main-border-radius-3px);
-    padding: 5px 5px;
-}
-
-body.light .chapter-add-hide { background-color: var(--grey2) }
-body.night .chapter-add-hide { background-color: var(--grey7) }
-
-.chapter-add-one-header {
-    font-weight: 700;
-    font-size: 20px;
-    grid-column: span 2;
-    text-align: center;
-}
-
-.chapter-add-one-cont, .chapter-add-many {
-    display: grid;
-    gap: var(--gap-5px) 10px;
-    grid-template-columns: max-content auto;
-}
-
-.chapter-add-one-chapter-tag, .chapter-add-one-text-tag {}
-.chapter-add-one-save-btn {
-    grid-column: span 2;
-    font-weight: 700;
-    font-size: 20px;
-} */
 
 </style>

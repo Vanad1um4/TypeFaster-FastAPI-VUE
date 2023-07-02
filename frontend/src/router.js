@@ -5,7 +5,6 @@ import Stats from './components/stats.vue'
 
 const router = createRouter({
     history: createWebHashHistory(),
-    // history: createWebHistory(),
     routes: [
         { path: '/library', name: 'library', component: Library, alias: '/' },
         { path: '/type/:book_id?', name: 'type', component: Type },
@@ -14,13 +13,3 @@ const router = createRouter({
 })
 
 export default router
-
-// export default createRouter({
-//     history: createWebHashHistory(),
-//     // history: createWebHistory(),
-//     routes: [
-//         { path: '/library', name: 'library', component: Library, alias: '/' },
-//         { path: '/type/:chapter_id?', name: 'type', component: Type },
-//         { path: '/stats', name: 'stats', component: Stats },
-//     ]
-// })

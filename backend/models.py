@@ -1,13 +1,10 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, create_engine
-from secrets import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
 
-# SQLite
-# DATABASE_URL = 'sqlite:///./db.sqlite'
-# engine = create_engine(DATABASE_URL, connect_args={'check_same_thread': False})
+from secrets import DB_HOST, DB_PORT, DB_NAME, DB_USER, DB_PASS
 
-# PostgreSQL
+
 DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
 engine = create_engine(DATABASE_URL)
 
