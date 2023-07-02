@@ -60,8 +60,3 @@ class Text(Base):
     stats_list = Column(String)
 
     book_of_text = relationship('Book', foreign_keys=[book_id], viewonly=True)
-
-
-# Base.metadata.drop_all(bind=engine, tables=[Book.__table__, Chapter.__table__, Text.__table__])
-# Base.metadata.drop_all(bind=engine, tables=[Book.__table__, Text.__table__])
-# Base.metadata.create_all(engine)

@@ -27,16 +27,6 @@ class BookTitle(BaseModel):
     title: str
 
 
-class ChapterWithTextCreate(BaseModel):
-    book_id: int
-    chapter_name: str
-    text: str
-
-
-class TextChapter(BaseModel):
-    chapter: str
-
-
 class StatsReturn(BaseModel):
     class StatsReturnArgs(BaseModel):
         errors: int
