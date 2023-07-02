@@ -61,7 +61,7 @@
                     v-on:change="setOptionsFetch"
                 >
 
-                <div class="width-text" title="You can specify the maximum width of the main window">
+                <div class="width-text hint" title="You can specify the maximum width of the main window. Expected value: from 800 to 3840.">
                     Max page width (px)
                 </div>
 
@@ -81,7 +81,7 @@
                     v-on:click="setOptionsFetch"
                 >💾</button>
 
-                <div class="show-stats-bar-text" title="Show statistics bar while typing">
+                <div class="show-stats-bar-text hint" title="Show statistics bar while typing">
                     Show stats bar
                 </div>
 
@@ -93,7 +93,7 @@
                     v-on:change="setOptionsFetch"
                 >
 
-                <div class="show-progress-bar-text" title="Show progress bar while typing">
+                <div class="show-progress-bar-text hint" title="Show progress bar while typing">
                     Show progress bar
                 </div>
 
@@ -105,7 +105,7 @@
                     v-on:change="setOptionsFetch"
                 >
 
-                <div class="show-error-history-text" title="Show errors on finished texts while typing">
+                <div class="show-error-history-text hint" title="Show errors on finished texts while typing">
                     Show past errors
                 </div>
 
@@ -117,7 +117,7 @@
                     v-on:change="setOptionsFetch"
                 >
 
-                <div class="line-height-text" title="You can specify the position of active line on the screen. For example: 0 - in the beginning, 50 - in the middle, 100 - in the end.">
+                <div class="line-height-text hint" title="You can specify the position of active line on the screen. For example: 1 - in the beginning, 50 - in the middle, 99 - in the end.">
                     Active line position (%)
                 </div>
 
@@ -137,7 +137,7 @@
                     v-on:click="setOptionsFetch"
                 >💾</button>
 
-                <div class="texts-gap-text" title="You can specify the gap between texts in pixels">
+                <div class="texts-gap-text hint" title="You can specify the gap between texts in pixels.">
                     Gap between texts (px)
                 </div>
 
@@ -168,14 +168,13 @@
                     Stats calc settings
                 </div>
 
-                <div class="stats-slice-len-text">
+                <div class="stats-slice-len-text hint" title="A size of a stats slice (A dot on a chart in Library). Also affects stats shown while typing. Expected positive number of minutes.">
                     Stats slice length
                 </div>
 
                 <input
                     type="text"
                     class="stats-slice-len-input"
-                    title="Duration of a stats slice. Expected positive number of minutes."
                     v-model="globalState.options.statsSliceLengthMinutes.val"
                     v-bind:disabled="localOptions.statsSliceLengthMinutes.disabled"
                     v-on:keydown.enter="setOptionsFetch"
@@ -187,14 +186,13 @@
                     v-on:click="setOptionsFetch"
                 >💾</button>
 
-                <div class="stats-use-n-slices-text">
+                <div class="stats-use-n-slices-text hint" title="The amount of last typed texts (in minutes) that will be used to calculate your CPM, WPM and Accuracy. Positive number expected.">
                     Use stats slices
                 </div>
 
                 <input
                     type="text"
                     class="stats-use-n-slices-input"
-                    title="How namy last stats slices will be used to calculate your CPM, WPM, ACC. Positive integer number expected."
                     v-model="globalState.options.useNLastMinutesForStats.val"
                     v-bind:disabled="localOptions.useNLastMinutesForStats.disabled"
                     v-on:keydown.enter="setOptionsFetch"
@@ -624,6 +622,9 @@ body.night .auth-btn:hover>div { color: var(--grey2); }
 
 
 
+.hint {
+    cursor: help;
+}
 .options-content-vis-settings-cont {
     margin-top: 30px;
 }

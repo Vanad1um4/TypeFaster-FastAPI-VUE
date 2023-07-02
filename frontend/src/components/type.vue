@@ -499,6 +499,8 @@ onUnmounted(() => {
     font-size: 27px;
     font-weight: 700;
     margin-bottom: 5px;
+    user-select: none;
+    cursor: default;
 }
 body.light .information { color: var(--grey7) }
 body.night .information { color: var(--grey3) }
@@ -521,6 +523,8 @@ body.hide-stats-bar .information { display: none }
     font-weight: 700;
     text-align: center;
     margin-bottom: 5px;
+    user-select: none;
+    cursor: default;
 }
 body.light .progress-bar { color: var(--grey7) }
 body.night .progress-bar { color: var(--grey3) }
