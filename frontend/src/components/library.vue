@@ -460,8 +460,6 @@ function gotAnswerFromUser(answ) {
     if (answ === 'yes') {
         if (actionState.actionType === 'bookDelById') {
             deleteBookFetch(actionState.params)
-        } else if (actionState.actionType === 'chapterDelById') {
-            deleteChapterFetch(actionState.params)
         }
     // } else if (answ === 'no') {
     }
