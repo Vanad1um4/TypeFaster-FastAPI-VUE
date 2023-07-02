@@ -193,9 +193,10 @@ function evaluateWhetherToFetchMoreTexts() {
     }
 
     const scrollRectBottom = document.querySelector('.main-scroll').getBoundingClientRect().bottom
+    const scrollRectHeight = document.querySelector('.main-scroll').getBoundingClientRect().height
     const lastTextTop = document.querySelector('.main-scroll > div:last-child').getBoundingClientRect().top
 
-    if (lastTextTop < scrollRectBottom) {
+    if (lastTextTop < scrollRectBottom + scrollRectHeight) {
         const currBatchLastTextId = Object.keys(texts)[Object.keys(texts).length - 1]
 
         if (currBatchLastTextId < typeState.lastTextId) {
@@ -205,7 +206,7 @@ function evaluateWhetherToFetchMoreTexts() {
 }
 
 
-function scrollActiveTextIntoView() {
+function scrollActiveLineIntoView() {
     const currSpanRectTop = document.querySelector(`.text${typeState.currTextId} .current`)?.getBoundingClientRect().top
     if (!currSpanRectTop) { return }
 
@@ -463,7 +464,7 @@ function hideWaitStatusMessage() {
 
 
 onUpdated(() => {
-    scrollActiveTextIntoView()
+    scrollActiveLineIntoView()
 });
 
 
